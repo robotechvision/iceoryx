@@ -1052,6 +1052,7 @@ void PortManager::publishServiceRegistry() const noexcept
                           CHUNK_NO_USER_HEADER_ALIGNMENT)
         .and_then([&](auto& chunk) {
             auto sample = static_cast<ServiceRegistry*>(chunk->userPayload());
+            sample->setEmpty();
 
             // It's ok to copy as the modifications happen in the same thread and not concurrently
             *sample = m_serviceRegistry;

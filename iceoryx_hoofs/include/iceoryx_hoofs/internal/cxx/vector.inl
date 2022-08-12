@@ -170,6 +170,12 @@ inline void vector<T, Capacity>::clear() noexcept
 }
 
 template <typename T, uint64_t Capacity>
+inline void vector<T, Capacity>::setEmpty() noexcept
+{
+    m_size = 0U;
+}
+
+template <typename T, uint64_t Capacity>
 template <typename... Targs>
 inline bool vector<T, Capacity>::emplace_back(Targs&&... args) noexcept
 {

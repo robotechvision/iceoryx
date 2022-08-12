@@ -96,6 +96,14 @@ class ServiceRegistry
     /// @note Can be used to obtain all entries or count them
     void forEach(cxx::function_ref<void(const ServiceDescriptionEntry&)> callable) const noexcept;
 
+    /// @brief clears itself without calling any destructors
+    /// @note should be called (only) after static-casting externally allocated bytes
+    ///       to the ServiceRegistry, resulting in its data being undefined
+    void setEmpty() {
+      m_serviceDescriptions.setEmpty();
+      m_freeIndex = NO_INDEX;
+    }
+
   private:
     using Entry_t = cxx::optional<ServiceDescriptionEntry>;
     using ServiceDescriptionContainer_t = cxx::vector<Entry_t, CAPACITY>;

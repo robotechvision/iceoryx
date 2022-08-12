@@ -157,6 +157,11 @@ class vector
     /// @brief calls the destructor of all contained elements and removes them
     void clear() noexcept;
 
+    /// @brief sets size to 0, not calling destructor of elements
+    /// @note should be called (only) after static-casting externally allocated bytes
+    ///       to the vector, resulting in its size value being undefined
+    void setEmpty() noexcept;
+
     /// @brief resizes the vector. If the vector size increases new elements
     /// will be constructed with the given arguments. If count is greater than the capacity
     /// the vector will stay unchanged.
