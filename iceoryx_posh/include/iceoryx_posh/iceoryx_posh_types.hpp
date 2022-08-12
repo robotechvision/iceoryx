@@ -93,13 +93,13 @@ constexpr uint32_t MAX_SERVERS = build::IOX_MAX_PUBLISHERS; /// @todo
 constexpr uint32_t MAX_CLIENTS_PER_SERVER = 256U;
 constexpr uint32_t MAX_REQUESTS_PROCESSED_SIMULTANEOUSLY = 4U;
 constexpr uint32_t MAX_RESPONSES_ALLOCATED_SIMULTANEOUSLY = MAX_REQUESTS_PROCESSED_SIMULTANEOUSLY;
-constexpr uint32_t MAX_REQUEST_QUEUE_CAPACITY = 1024;
+constexpr uint32_t MAX_REQUEST_QUEUE_CAPACITY = 2048;
 // Waitset
 namespace popo
 {
 using WaitSetIsConditionSatisfiedCallback = cxx::function<bool()>;
 }
-constexpr uint32_t MAX_NUMBER_OF_CONDITION_VARIABLES = 1024U;
+constexpr uint32_t MAX_NUMBER_OF_CONDITION_VARIABLES = 2048U;
 
 constexpr uint32_t MAX_NUMBER_OF_NOTIFIERS = build::IOX_MAX_NUMBER_OF_NOTIFIERS;
 /// @note Waitset and Listener share both the max available notifiers, if one of them is running out of of notifiers
