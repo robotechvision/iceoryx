@@ -16,36 +16,16 @@
 #ifndef IOX_POSH_LOG_POSH_LOGGING_HPP
 #define IOX_POSH_LOG_POSH_LOGGING_HPP
 
-/// @todo this might be needed to be public when the logger is used in templates
+// @todo iox-#1345 for transition only; delete this file
 
-#include "iceoryx_hoofs/log/logging_free_function_building_block.hpp"
+#include "iceoryx_hoofs/log/logging.hpp"
 
-namespace iox
-{
-struct LoggingComponentPosh
-{
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    static constexpr char Ctx[] = "POSH";
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    static constexpr char Description[] = "Log context of the POSH component!";
-};
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-static constexpr auto LoggerPosh = iox::log::ffbb::ComponentLogger<LoggingComponentPosh>;
-
-// NOLINTNEXTLINE(readability-identifier-naming)
-static constexpr auto LogFatal = iox::log::ffbb::LogFatal<LoggingComponentPosh>;
-// NOLINTNEXTLINE(readability-identifier-naming)
-static constexpr auto LogError = iox::log::ffbb::LogError<LoggingComponentPosh>;
-// NOLINTNEXTLINE(readability-identifier-naming)
-static constexpr auto LogWarn = iox::log::ffbb::LogWarn<LoggingComponentPosh>;
-// NOLINTNEXTLINE(readability-identifier-naming)
-static constexpr auto LogInfo = iox::log::ffbb::LogInfo<LoggingComponentPosh>;
-// NOLINTNEXTLINE(readability-identifier-naming)
-static constexpr auto LogDebug = iox::log::ffbb::LogDebug<LoggingComponentPosh>;
-// NOLINTNEXTLINE(readability-identifier-naming)
-static constexpr auto LogVerbose = iox::log::ffbb::LogVerbose<LoggingComponentPosh>;
-
-} // namespace iox
+#define LogFatal() IOX_LOG(FATAL)
+#define LogError() IOX_LOG(ERROR)
+#define LogWarn() IOX_LOG(WARN)
+#define LogInfo() IOX_LOG(INFO)
+#define LogDebug() IOX_LOG(DEBUG)
+#define LogTrace() IOX_LOG(TRACE)
+#define LogVerbose() IOX_LOG(TRACE)
 
 #endif // IOX_POSH_LOG_POSH_LOGGING_HPP

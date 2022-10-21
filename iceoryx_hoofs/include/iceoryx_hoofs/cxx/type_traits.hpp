@@ -22,6 +22,7 @@
 #include <type_traits>
 
 #include "iceoryx_hoofs/cxx/attributes.hpp"
+#include "iceoryx_platform/platform_settings.hpp"
 
 namespace iox
 {
@@ -55,16 +56,7 @@ using add_const_conditionally_t = typename add_const_conditionally<T, C>::type;
 /// @endcode
 ///
 template <typename>
-constexpr bool always_false_v = false;
-
-// windows defines __cplusplus as 199711L
-#if __cplusplus < 201703L && !defined(_WIN32)
-template <typename C, typename... Cargs>
-using invoke_result = std::result_of<C(Cargs...)>;
-#elif __cplusplus >= 201703L || defined(_WIN32)
-template <typename C, typename... Cargs>
-using invoke_result = std::invoke_result<C, Cargs...>;
-#endif
+constexpr bool always_false_v{false};
 
 ///
 /// @brief Verifies whether the passed Callable type is in fact invocable with the given arguments
@@ -75,15 +67,15 @@ struct is_invocable
     // This variant is chosen when Callable(ArgTypes) successfully resolves to a valid type, i.e. is invocable.
     /// @note result_of is deprecated, switch to invoke_result in C++17
     template <typename C, typename... As>
-    static constexpr std::true_type test(typename cxx::invoke_result<C, As...>::type* f IOX_MAYBE_UNUSED) noexcept
+    static constexpr std::true_type test(typename platform::invoke_result<C, As...>::type*) noexcept
     {
         return {};
     }
 
+    // AXIVION Next Construct AutosarC++19_03-A8.4.1 : we require a SFINEA failure case where all
+    // parameter types (non invokable ones) are allowed, this can be achieved with variadic arguments
     // This is chosen if Callable(ArgTypes) does not resolve to a valid type.
     template <typename C, typename... As>
-    /// @NOLINTJUSTIFICATION we require a SFINEA failure case where all parameter types (non invokable ones) are
-    ///                      allowed, this can be achieved with variadic arguments
     /// @NOLINTNEXTLINE(cert-dcl50-cpp)
     static constexpr std::false_type test(...) noexcept
     {
@@ -91,7 +83,7 @@ struct is_invocable
     }
 
     // Test with nullptr as this can stand in for a pointer to any type.
-    static constexpr bool value = decltype(test<Callable, ArgTypes...>(nullptr))::value;
+    static constexpr bool value{decltype(test<Callable, ArgTypes...>(nullptr))::value};
 };
 
 ///
@@ -105,15 +97,14 @@ struct is_invocable_r
 {
     template <typename C, typename... As>
     static constexpr std::true_type
-    test(std::enable_if_t<std::is_convertible<typename cxx::invoke_result<C, As...>::type, ReturnType>::value>* f
-             IOX_MAYBE_UNUSED) noexcept
+    test(std::enable_if_t<
+         std::is_convertible<typename platform::invoke_result<C, As...>::type, ReturnType>::value>*) noexcept
     {
         return {};
     }
-
+    // AXIVION Next Construct AutosarC++19_03-A8.4.1 : we require a SFINEA failure case where all
+    // parameter types (non invokable ones) are allowed, this can be achieved with variadic arguments
     template <typename C, typename... As>
-    /// @NOLINTJUSTIFICATION we require a SFINEA failure case where all parameter types (non invokable ones) are
-    ///                      allowed, this can be achieved with variadic arguments
     /// @NOLINTNEXTLINE(cert-dcl50-cpp)
     static constexpr std::false_type test(...) noexcept
     {
@@ -121,7 +112,7 @@ struct is_invocable_r
     }
 
     // Test with nullptr as this can stand in for a pointer to any type.
-    static constexpr bool value = decltype(test<Callable, ArgTypes...>(nullptr))::value;
+    static constexpr bool value{decltype(test<Callable, ArgTypes...>(nullptr))::value};
 };
 
 ///
@@ -146,7 +137,8 @@ struct is_char_array : std::false_type
 };
 
 template <uint64_t N>
-/// @NOLINTJUSTIFICATION struct used to deduce char array types, it does not use them
+// AXIVION Next Construct AutosarC++19_03-A18.1.1 : struct used to deduce char array types, it
+// does not use them
 /// @NOLINTNEXTLINE(hicpp-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
 struct is_char_array<char[N]> : std::true_type
 {
@@ -166,6 +158,7 @@ struct is_cxx_string<::iox::cxx::string<N>> : std::true_type
 /// @brief Maps a sequence of any types to the type void
 template <typename...>
 using void_t = void;
+
 } // namespace cxx
 } // namespace iox
 

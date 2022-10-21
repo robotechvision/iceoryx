@@ -1,4 +1,4 @@
-// Copyright (c) 2019 by Robert Bosch GmbH. All rights reserved.
+// Copyright (c) 2022 by Apex.AI Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,99 +13,55 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+
 #ifndef IOX_HOOFS_LOG_LOGGING_HPP
 #define IOX_HOOFS_LOG_LOGGING_HPP
 
-#include "iceoryx_hoofs/log/logcommon.hpp"
-#include "iceoryx_hoofs/log/logger.hpp"
 #include "iceoryx_hoofs/log/logstream.hpp"
-
-#include <chrono>
-#include <string>
-
 namespace iox
 {
 namespace log
 {
-Logger& createLogger(const std::string& ctxId,
-                     const std::string& ctxDescription,
-                     const LogLevel appDefLogLevel = LogLevel::kWarn) noexcept;
-
-inline constexpr LogHex8 HexFormat(uint8_t value) noexcept
+namespace internal
 {
-    return LogHex8(value);
-}
-inline constexpr LogHex8 HexFormat(int8_t value) noexcept
+/// @brief Convenience function for the IOX_LOG_INTERNAL macro
+inline bool isLogLevelActive(LogLevel logLevel) noexcept
 {
-    return LogHex8(static_cast<uint8_t>(value));
+    // AXIVION Next Construct FaultDetection-DeadBranches this is a configurable compile time option to be able to
+    // optimize the logger call away during compilation and intended
+    // AXIVION Next Construct AutosarC++19_03-M0.1.2 see justification for FaultDetection-DeadBranches
+    // AXIVION Next Construct AutosarC++19_03-M0.1.9 see justification for FaultDetection-DeadBranches
+    // AXIVION Next Construct AutosarC++19_03-M5.14.1 getLogLevel is a static method without side effects
+    return ((logLevel) <= MINIMAL_LOG_LEVEL) && (IGNORE_ACTIVE_LOG_LEVEL || ((logLevel) <= log::Logger::getLogLevel()));
 }
-inline constexpr LogHex16 HexFormat(uint16_t value) noexcept
-{
-    return LogHex16(value);
-}
-inline constexpr LogHex16 HexFormat(int16_t value) noexcept
-{
-    return LogHex16(static_cast<uint16_t>(value));
-}
-inline constexpr LogHex32 HexFormat(uint32_t value) noexcept
-{
-    return LogHex32(value);
-}
-inline constexpr LogHex32 HexFormat(int32_t value) noexcept
-{
-    return LogHex32(static_cast<uint32_t>(value));
-}
-inline constexpr LogHex64 HexFormat(uint64_t value) noexcept
-{
-    return LogHex64(value);
-}
-inline constexpr LogHex64 HexFormat(int64_t value) noexcept
-{
-    return LogHex64(static_cast<uint64_t>(value));
-}
-
-inline constexpr LogBin8 BinFormat(uint8_t value) noexcept
-{
-    return LogBin8(value);
-}
-inline constexpr LogBin8 BinFormat(int8_t value) noexcept
-{
-    return LogBin8(static_cast<uint8_t>(value));
-}
-inline constexpr LogBin16 BinFormat(uint16_t value) noexcept
-{
-    return LogBin16(value);
-}
-inline constexpr LogBin16 BinFormat(int16_t value) noexcept
-{
-    return LogBin16(static_cast<uint16_t>(value));
-}
-inline constexpr LogBin32 BinFormat(uint32_t value) noexcept
-{
-    return LogBin32(value);
-}
-inline constexpr LogBin32 BinFormat(int32_t value) noexcept
-{
-    return LogBin32(static_cast<uint32_t>(value));
-}
-inline constexpr LogBin64 BinFormat(uint64_t value) noexcept
-{
-    return LogBin64(value);
-}
-inline constexpr LogBin64 BinFormat(int64_t value) noexcept
-{
-    return LogBin64(static_cast<uint64_t>(value));
-}
-
-template <typename T, typename std::enable_if<!std::is_pointer<T>::value, std::nullptr_t>::type = nullptr>
-inline constexpr LogRawBuffer RawBuffer(const T& value) noexcept
-{
-    // LogRawBuffer is used with the streaming operator which converts the data into a string,
-    // therefore we shouldn't get lifetime issues
-    return LogRawBuffer{reinterpret_cast<const uint8_t*>(&value), sizeof(T)};
-}
-
+} // namespace internal
 } // namespace log
 } // namespace iox
+
+/// @brief Only for internal usage
+// AXIVION Next Construct AutosarC++19_03-A16.0.1 cannot be realized with templates or constexpr functions due to the
+// intended lazy evaluation technique with the if statement
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+#define IOX_LOG_INTERNAL(file, line, function, level)                                                                  \
+    /* if (iox::log::internal::isLogLevelActive(level)) @todo iox-#1345 lazy evaluation causes issues with Axivion */  \
+    iox::log::internal::SelectedLogStream(file, line, function, level, iox::log::internal::isLogLevelActive(level))    \
+        .self()
+
+/// @brief Macro for logging
+/// @param[in] level is the log level to be used for the log message
+/// @code
+///     IOX_LOG(INFO) << "Hello World";
+/// @endcode
+// AXIVION Next Construct AutosarC++19_03-A16.0.1 needed for source code location, safely wrapped in macro
+// AXIVION Next Construct AutosarC++19_03-M16.0.6 brackets around macro parameter would lead to compile time failures in this case
+// NOLINTJUSTIFICATION __PRETTY_FUNCTION__ would work better in lambdas but especially with
+// templates the resulting string is too large; we also get the file name and the line of the invocation which should be
+// sufficient for debugging
+// NOLINTBEGIN(bugprone-lambda-function-name)
+#define IOX_LOG(level)                                                                                                 \
+    IOX_LOG_INTERNAL(__FILE__, __LINE__, static_cast<const char*>(__FUNCTION__), iox::log::LogLevel::level)
+// NOLINTEND(bugprone-lambda-function-name)
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 #endif // IOX_HOOFS_LOG_LOGGING_HPP

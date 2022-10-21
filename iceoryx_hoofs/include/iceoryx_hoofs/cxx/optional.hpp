@@ -1,5 +1,5 @@
 // Copyright (c) 2019 by Robert Bosch GmbH. All rights reserved.
-// Copyright (c) 2021 by Apex.AI Inc. All rights reserved.
+// Copyright (c) 2021 - 2022 by Apex.AI Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@
 #ifndef IOX_HOOFS_CXX_OPTIONAL_HPP
 #define IOX_HOOFS_CXX_OPTIONAL_HPP
 
-#include "iceoryx_hoofs/cxx/function_ref.hpp"
 #include "iceoryx_hoofs/cxx/functional_interface.hpp"
 #include "iceoryx_hoofs/cxx/requires.hpp"
-#include "iceoryx_hoofs/cxx/types.hpp"
+#include "iceoryx_hoofs/iceoryx_hoofs_types.hpp"
 
 #include <new> // needed for placement new in the construct_value member function
 #include <utility>
@@ -230,10 +229,22 @@ class optional : public FunctionalInterface<optional<T>, T, void>
     const T&& value() const&& noexcept;
 
   private:
+    // the hasValue member should be first member in the memory layout to reveal casting
+    // bugs early.
+    //
+    // See the following problem:
+    //   void initHandle(void * ptr) {
+    //     Handle * handle = static_cast<Handle>(ptr);
+    //   }
+    //   void doStuff(cxx::optional<Handle> & handle) {
+    //     // uses optional<Handle> instead of handle, if the bool is the second parameter such
+    //     // mistakes can be introduced quickly in low level c abstraction classes
+    //     initHandle(&handle);
+    //   }
+    bool m_hasValue{false};
     // safe access is guaranteed since the array is wrapped inside the optional
     // NOLINTNEXTLINE(hicpp-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays)
     alignas(T) byte_t m_data[sizeof(T)];
-    bool m_hasValue{false};
 
   private:
     template <typename... Targs>

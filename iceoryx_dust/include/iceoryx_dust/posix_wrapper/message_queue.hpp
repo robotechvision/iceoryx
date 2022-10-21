@@ -21,9 +21,9 @@
 #include "iceoryx_hoofs/design_pattern/creation.hpp"
 #include "iceoryx_hoofs/internal/posix_wrapper/ipc_channel.hpp"
 #include "iceoryx_hoofs/internal/units/duration.hpp"
-#include "iceoryx_hoofs/platform/fcntl.hpp"
-#include "iceoryx_hoofs/platform/mqueue.hpp"
-#include "iceoryx_hoofs/platform/stat.hpp"
+#include "iceoryx_platform/fcntl.hpp"
+#include "iceoryx_platform/mqueue.hpp"
+#include "iceoryx_platform/stat.hpp"
 
 namespace iox
 {
@@ -69,14 +69,11 @@ class MessageQueue : public DesignPattern::Creation<MessageQueue, IpcChannelErro
 
     static cxx::expected<bool, IpcChannelError> unlinkIfExists(const IpcChannelName_t& name) noexcept;
 
-    /// close and remove message queue.
-    cxx::expected<IpcChannelError> destroy() noexcept;
-
     /// @brief send a message to queue using std::string.
     /// @return true if sent without errors, false otherwise
     cxx::expected<IpcChannelError> send(const std::string& msg) const noexcept;
 
-    /// @todo zero copy receive with receive(cxx::string&); cxx::string would be the buffer for mq_receive
+    /// @todo iox-#1693 zero copy receive with receive(cxx::string&); cxx::string would be the buffer for mq_receive
 
     /// @brief receive message from queue using std::string.
     /// @return number of characters received. In case of an error, returns -1 and msg is empty.
@@ -107,6 +104,7 @@ class MessageQueue : public DesignPattern::Creation<MessageQueue, IpcChannelErro
                                                              const int32_t errnum) noexcept;
     static cxx::expected<IpcChannelName_t, IpcChannelError>
     sanitizeIpcChannelName(const IpcChannelName_t& name) noexcept;
+    cxx::expected<IpcChannelError> destroy() noexcept;
 
   private:
     IpcChannelName_t m_name;

@@ -269,17 +269,16 @@ TEST_F(ChunkReceiver_test, asStringLiteralConvertsChunkReceiveResultValuesToStri
 TEST_F(ChunkReceiver_test, LogStreamConvertsChunkReceiveResultValueToString)
 {
     ::testing::Test::RecordProperty("TEST_ID", "a7238bd8-548d-453f-84aa-0f2e82f7a3bc");
-    Logger_Mock loggerMock;
+    iox::testing::Logger_Mock loggerMock;
 
     auto sut = iox::popo::ChunkReceiveResult::NO_CHUNK_AVAILABLE;
 
     {
-        auto logstream = iox::log::LogStream(loggerMock);
-        logstream << sut;
+        IOX_LOGSTREAM_MOCK(loggerMock) << sut;
     }
 
-    ASSERT_THAT(loggerMock.m_logs.size(), Eq(1U));
-    EXPECT_THAT(loggerMock.m_logs[0].message, StrEq(iox::popo::asStringLiteral(sut)));
+    ASSERT_THAT(loggerMock.logs.size(), Eq(1U));
+    EXPECT_THAT(loggerMock.logs[0].message, StrEq(iox::popo::asStringLiteral(sut)));
 }
 
 } // namespace

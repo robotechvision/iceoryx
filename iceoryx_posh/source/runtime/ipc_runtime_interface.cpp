@@ -31,10 +31,10 @@ IpcRuntimeInterface::IpcRuntimeInterface(const RuntimeName_t& roudiName,
                                          const RuntimeName_t& runtimeName,
                                          const units::Duration roudiWaitingTimeout) noexcept
     : m_runtimeName(runtimeName)
-    , m_AppIpcInterface(runtimeName)
     , m_RoudiIpcInterface(roudiName)
 {
-    if (!m_AppIpcInterface.isInitialized())
+    m_AppIpcInterface.emplace(runtimeName);
+    if (!m_AppIpcInterface->isInitialized())
     {
         errorHandler(PoshError::IPC_INTERFACE__UNABLE_TO_CREATE_APPLICATION_CHANNEL);
         return;
@@ -123,7 +123,7 @@ IpcRuntimeInterface::IpcRuntimeInterface(const RuntimeName_t& roudiName,
 
     if (regState != RegState::FINISHED)
     {
-        m_AppIpcInterface.cleanupResource();
+        m_AppIpcInterface.reset();
     }
     switch (regState)
     {
@@ -150,7 +150,7 @@ bool IpcRuntimeInterface::sendKeepalive() noexcept
                : true;
 }
 
-rp::BaseRelativePointer::offset_t IpcRuntimeInterface::getSegmentManagerAddressOffset() const noexcept
+memory::UntypedRelativePointer::offset_t IpcRuntimeInterface::getSegmentManagerAddressOffset() const noexcept
 {
     cxx::Ensures(m_segmentManagerAddressOffset.has_value()
                  && "No segment manager available! Should have been fetched in the c'tor");
@@ -165,7 +165,7 @@ bool IpcRuntimeInterface::sendRequestToRouDi(const IpcMessage& msg, IpcMessage& 
         return false;
     }
 
-    if (!m_AppIpcInterface.receive(answer))
+    if (!m_AppIpcInterface->receive(answer))
     {
         LogError() << "Could not receive request via App IPC channel interface.\n";
         return false;
@@ -211,8 +211,6 @@ void IpcRuntimeInterface::waitForRoudi(cxx::DeadlineTimer& timer) noexcept
 IpcRuntimeInterface::RegAckResult IpcRuntimeInterface::waitForRegAck(int64_t transmissionTimestamp) noexcept
 {
     // wait for the register ack from the RouDi daemon. If we receive another response we do a retry
-    // @todo if the IPC channels are properly setup and cleaned up, always the expected REG_ACK should be received here,
-    // so if not this issue should be passed to the error handling later
     constexpr size_t MAX_RETRY_COUNT = 3;
     size_t retryCounter = 0;
     while (retryCounter++ < MAX_RETRY_COUNT)
@@ -220,7 +218,7 @@ IpcRuntimeInterface::RegAckResult IpcRuntimeInterface::waitForRegAck(int64_t tra
         using namespace units::duration_literals;
         IpcMessage receiveBuffer;
         // wait for IpcMessageType::REG_ACK from RouDi for 1 seconds
-        if (m_AppIpcInterface.timedReceive(1_s, receiveBuffer))
+        if (m_AppIpcInterface->timedReceive(1_s, receiveBuffer))
         {
             std::string cmd = receiveBuffer.getElementAtIndex(0U);
 
@@ -234,7 +232,7 @@ IpcRuntimeInterface::RegAckResult IpcRuntimeInterface::waitForRegAck(int64_t tra
 
                 // read out the shared memory base address and save it
                 iox::cxx::convert::fromString(receiveBuffer.getElementAtIndex(1U).c_str(), m_shmTopicSize);
-                rp::BaseRelativePointer::offset_t offset{0U};
+                memory::UntypedRelativePointer::offset_t offset{0U};
                 iox::cxx::convert::fromString(receiveBuffer.getElementAtIndex(2U).c_str(), offset);
                 m_segmentManagerAddressOffset.emplace(offset);
 

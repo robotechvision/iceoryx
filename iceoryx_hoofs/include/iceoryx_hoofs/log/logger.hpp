@@ -1,5 +1,4 @@
-// Copyright (c) 2019 by Robert Bosch GmbH. All rights reserved.
-// Copyright (c) 2021 by Apex.AI Inc. All rights reserved.
+// Copyright (c) 2022 by Apex.AI Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,87 +13,43 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+
+/// @todo iox-#1345 the content of this file should be customizable;
+/// in order to achieve this, this file will be moved to
+/// iceoryx_hoofs
+///  |- customization
+///      |- log
+///          |- iceoryx_hoofs
+///              |- log
+///                  |- logger.hpp
+/// the iceoryx_hoofs/customization/log path can then be set via cmake argument or toolchain file and by default will
+/// point the the implementation in iceoryx_hoofs. This is similar to the iceoryx_platform customization.
+
 #ifndef IOX_HOOFS_LOG_LOGGER_HPP
 #define IOX_HOOFS_LOG_LOGGER_HPP
 
-#include "iceoryx_hoofs/cxx/generic_raii.hpp"
-#include "iceoryx_hoofs/log/logcommon.hpp"
-#include "iceoryx_hoofs/log/logstream.hpp"
-
-#include <atomic>
-#include <chrono>
-#include <string>
+#include "iceoryx_hoofs/iceoryx_hoofs_deployment.hpp"
+#include "iceoryx_hoofs/log/building_blocks/console_logger.hpp"
+#include "iceoryx_hoofs/log/building_blocks/logger.hpp"
 
 namespace iox
 {
 namespace log
 {
-/// @todo for asynchronous logging, make the logger an active object according to Herb Sutter
-/// https://herbsutter.com/2010/07/12/effective-concurrency-prefer-using-active-objects-instead-of-naked-threads/
+using Logger = internal::Logger<ConsoleLogger>;
+using TestingLoggerBase = internal::Logger<ConsoleLogger>;
 
-class Logger
-{
-    friend class LogManager;
-    /// @todo LogStream needs to call Log(); do we want to make Log() public?
-    friend class LogStream;
+/// @todo iox-#1345 make this a option a cmake argument and use via a compile define
+/// @brief If set to true, the IOX_LOG macro will ignore the the configured log level and forward all messages to the
+/// logger. This is useful in cases the default ConsoleLogger is replaced by a custom logger which does the filtering by
+/// itself
+/// @note This has an performance impact if set to true since the lazy evaluation of the logged data will be jimmied.
+static constexpr bool IGNORE_ACTIVE_LOG_LEVEL{false};
 
-  public:
-    Logger(Logger&& other) noexcept;
-    Logger& operator=(Logger&& rhs) noexcept;
-
-    Logger(const Logger& other) = delete;
-    Logger& operator=(const Logger& rhs) = delete;
-
-    /// @brief Getter method for the current LogLevel
-    /// @return the current LogLevel
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    LogLevel GetLogLevel() const noexcept;
-
-    /// @brief Sets the LogLevel for the Logger
-    /// @param[in] logLevel to be set
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    void SetLogLevel(const LogLevel logLevel) noexcept;
-
-    /// @brief Sets the LogLevel to the given level for the lifetime of the GenericRAII object and then sets it back to
-    /// the previous one
-    /// @param[in] logLevel to be set temporarily
-    /// @return a scope guard which resets the LogLevel to the value at the time when this method was called
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    cxx::GenericRAII SetLogLevelForScope(const LogLevel logLevel) noexcept;
-
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    void SetLogMode(const LogMode logMode) noexcept;
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    bool IsEnabled(const LogLevel logLevel) const noexcept;
-
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    LogStream LogFatal() noexcept;
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    LogStream LogError() noexcept;
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    LogStream LogWarn() noexcept;
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    LogStream LogInfo() noexcept;
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    LogStream LogDebug() noexcept;
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    LogStream LogVerbose() noexcept;
-
-  protected:
-    Logger(const std::string& ctxId, const std::string& ctxDescription, const LogLevel appLogLevel) noexcept;
-
-    // virtual because of Logger_Mock
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    virtual void Log(const LogEntry& entry) const noexcept;
-
-  private:
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    static void Print(const LogEntry& entry) noexcept;
-
-    std::atomic<LogLevel> m_logLevel{LogLevel::kVerbose};
-    std::atomic<LogLevel> m_logLevelPredecessor{LogLevel::kVerbose};
-    std::atomic<LogMode> m_logMode{LogMode::kConsole};
-};
+/// @brief The minimal log level which will be compiled into the application. All log levels below this will be
+/// optimized out at compile time
+/// @note This is different than IGNORE_ACTIVE_LOG_LEVEL since the active log level could still be set to off at runtime
+static constexpr LogLevel MINIMAL_LOG_LEVEL{build::IOX_MINIMAL_LOG_LEVEL};
 
 } // namespace log
 } // namespace iox

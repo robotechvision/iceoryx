@@ -25,7 +25,7 @@
 #include <limits>
 #include <type_traits>
 
-#include "iceoryx_hoofs/platform/platform_correction.hpp"
+#include "iceoryx_platform/platform_correction.hpp"
 
 namespace iox
 {
@@ -107,7 +107,7 @@ class variant
 {
   private:
     /// @brief contains the size of the largest element
-    static constexpr uint64_t TYPE_SIZE = algorithm::max(sizeof(Types)...);
+    static constexpr uint64_t TYPE_SIZE = algorithm::maxVal(sizeof(Types)...);
 
   public:
     /// @brief the default constructor constructs a variant which does not contain
@@ -261,9 +261,9 @@ class variant
     constexpr uint64_t index() const noexcept;
 
   private:
-    /// @todo #1196 Replace with UninitializedArray
+    /// @todo iox-#1614 Replace with UninitializedArray
     // NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays)
-    alignas(algorithm::max(alignof(Types)...)) internal::byte_t m_storage[TYPE_SIZE]{0U};
+    alignas(algorithm::maxVal(alignof(Types)...)) internal::byte_t m_storage[TYPE_SIZE]{0U};
     // NOLINTEND(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays)
     uint64_t m_type_index{INVALID_VARIANT_INDEX};
 

@@ -1,5 +1,5 @@
 // Copyright (c) 2019 by Robert Bosch GmbH. All rights reserved.
-// Copyright (c) 2021 by Apex.AI Inc. All rights reserved.
+// Copyright (c) 2021 - 2022 by Apex.AI Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -153,7 +153,7 @@ optional<T>::operator=(U&& newValue) noexcept
 {
     if (m_hasValue)
     {
-/// @todo broken msvc compiler, see:
+/// @todo iox-#1694 broken msvc compiler, see:
 ///  https://developercommunity.visualstudio.com/content/problem/858688/stdforward-none-of-these-2-overloads-could-convert.html
 /// remove this as soon as it is fixed;
 #ifdef _WIN32
@@ -164,7 +164,7 @@ optional<T>::operator=(U&& newValue) noexcept
     }
     else
     {
-/// @todo again broken msvc compiler
+/// @todo iox-#1694 again broken msvc compiler
 #ifdef _WIN32
         construct_value(newValue);
 #else
@@ -260,7 +260,7 @@ template <typename T>
 inline T& optional<T>::value() & noexcept
 {
     Expects(has_value());
-    return *static_cast<T*>(static_cast<void*>(m_data));
+    return *static_cast<T*>(static_cast<void*>(&m_data));
 }
 
 template <typename T>
@@ -274,7 +274,7 @@ template <typename T>
 inline T&& optional<T>::value() && noexcept
 {
     Expects(has_value());
-    return std::move(*static_cast<T*>(static_cast<void*>(m_data)));
+    return std::move(*static_cast<T*>(static_cast<void*>(&m_data)));
 }
 
 template <typename T>
@@ -288,7 +288,7 @@ template <typename T>
 template <typename... Targs>
 inline void optional<T>::construct_value(Targs&&... args) noexcept
 {
-    new (static_cast<T*>(static_cast<void*>(m_data))) T(std::forward<Targs>(args)...);
+    new (static_cast<T*>(static_cast<void*>(&m_data))) T(std::forward<Targs>(args)...);
     m_hasValue = true;
 }
 

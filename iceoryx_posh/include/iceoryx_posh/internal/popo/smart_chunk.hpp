@@ -20,7 +20,6 @@
 
 #include "iceoryx_hoofs/cxx/type_traits.hpp"
 #include "iceoryx_hoofs/cxx/unique_ptr.hpp"
-#include "iceoryx_hoofs/log/logger.hpp"
 #include "iceoryx_posh/mepoo/chunk_header.hpp"
 
 namespace iox
@@ -42,7 +41,7 @@ struct SmartChunkPrivateData
     SmartChunkPrivateData& operator=(const SmartChunkPrivateData&) = delete;
     ~SmartChunkPrivateData() = default;
 
-    cxx::unique_ptr<T> smartChunkUniquePtr;
+    cxx::optional<cxx::unique_ptr<T>> smartChunkUniquePtr;
     std::reference_wrapper<TransmissionInterface> producerRef;
 };
 
@@ -59,7 +58,7 @@ struct SmartChunkPrivateData<TransmissionInterface, const T, H>
     SmartChunkPrivateData& operator=(const SmartChunkPrivateData&) = delete;
     ~SmartChunkPrivateData() = default;
 
-    cxx::unique_ptr<const T> smartChunkUniquePtr;
+    cxx::optional<cxx::unique_ptr<const T>> smartChunkUniquePtr;
 };
 } // namespace internal
 

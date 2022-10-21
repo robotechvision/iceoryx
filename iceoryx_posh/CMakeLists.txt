@@ -21,6 +21,7 @@ set(IOX_VERSION_STRING "2.90.0")
 project(iceoryx_posh VERSION ${IOX_VERSION_STRING})
 
 find_package(Threads REQUIRED)
+find_package(iceoryx_platform REQUIRED)
 find_package(iceoryx_hoofs REQUIRED)
 find_package(iceoryx_dust REQUIRED)
 
@@ -38,6 +39,7 @@ endif()
 
 include(IceoryxPackageHelper)
 include(IceoryxPlatform)
+include(IceoryxPlatformSettings)
 
 include(cmake/IceoryxPoshDeployment.cmake)
 
@@ -93,7 +95,6 @@ iox_add_library(
     PRIVATE_LIBS            ${CMAKE_THREAD_LIBS_INIT}
     PRIVATE_LIBS_LINUX      rt
     FILES
-        source/log/posh_logging.cpp
         source/capro/capro_message.cpp
         source/capro/service_description.cpp
         source/error_handling/error_handling.cpp
@@ -243,7 +244,6 @@ if(TOML_CONFIG)
                             ${CMAKE_BINARY_DIR}/dependencies/install/include
         INSTALL_INTERFACE   include/${PREFIX}
         FILES
-            source/log/posh_config_logging.cpp
             source/gateway/gateway_config.cpp
             source/gateway/toml_gateway_config_parser.cpp
             source/roudi/roudi_config_toml_file_provider.cpp
@@ -303,7 +303,7 @@ if(ROUDI_ENVIRONMENT OR BUILD_TEST)
     #
     ######### posh roudi environment ##########
     #
-    find_package(iceroyx_hoofs_testing)
+    find_package(iceoryx_hoofs_testing REQUIRED)
     iox_add_library(
         STATIC
         TARGET                  iceoryx_posh_testing

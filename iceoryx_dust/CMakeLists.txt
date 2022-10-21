@@ -20,14 +20,18 @@ set(IOX_VERSION_STRING "2.90.0")
 
 project(iceoryx_dust VERSION ${IOX_VERSION_STRING})
 
+find_package(iceoryx_platform REQUIRED)
 find_package(iceoryx_hoofs REQUIRED)
 
 include(IceoryxPackageHelper)
 include(IceoryxPlatform)
+include(IceoryxPlatformSettings)
 
 if(CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCHES Darwin)
     option(BUILD_SHARED_LIBS "Create shared libraries by default" ON)
 endif()
+
+set(PREFIX iceoryx/v${CMAKE_PROJECT_VERSION})
 
 #
 ########## build iceoryx dust lib ##########

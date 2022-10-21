@@ -17,7 +17,6 @@
 #include "iceoryx_dust/posix_wrapper/named_pipe.hpp"
 #include "iceoryx_hoofs/cxx/deadline_timer.hpp"
 #include "iceoryx_hoofs/cxx/helplets.hpp"
-#include "iceoryx_hoofs/posix_wrapper/posix_call.hpp"
 
 #include <thread>
 
@@ -38,7 +37,7 @@ NamedPipe::NamedPipe() noexcept
     this->m_errorValue = IpcChannelError::NOT_INITIALIZED;
 }
 
-// NOLINTNEXTLINE(readability-function-size) todo(iox-#832): make a struct out of arguments
+// NOLINTNEXTLINE(readability-function-size) @todo iox-#832 make a struct out of arguments
 NamedPipe::NamedPipe(const IpcChannelName_t& name,
                      const IpcChannelSide channelSide,
                      const size_t maxMsgSize,
@@ -183,12 +182,6 @@ cxx::expected<IpcChannelError> NamedPipe::destroy() noexcept
         m_data = nullptr;
     }
     return cxx::success<>();
-}
-
-// NOLINTNEXTLINE(readability-convert-member-functions-to-static) API can be misused if IPC channel changes
-cxx::expected<bool, IpcChannelError> NamedPipe::isOutdated() noexcept
-{
-    return cxx::success<bool>(false);
 }
 
 cxx::expected<bool, IpcChannelError> NamedPipe::unlinkIfExists(const IpcChannelName_t& name) noexcept

@@ -17,7 +17,7 @@
 #ifndef IOX_POSH_MEPOO_MEPOO_SEGMENT_INL
 #define IOX_POSH_MEPOO_MEPOO_SEGMENT_INL
 
-#include "iceoryx_hoofs/internal/relocatable_pointer/relative_pointer.hpp"
+#include "iceoryx_hoofs/memory/relative_pointer.hpp"
 #include "iceoryx_posh/error_handling/error_handling.hpp"
 #include "iceoryx_posh/internal/log/posh_logging.hpp"
 #include "iceoryx_posh/internal/mepoo/mepoo_segment.hpp"
@@ -76,12 +76,17 @@ inline SharedMemoryObjectType MePooSegment<SharedMemoryObjectType, MemoryManager
             .permissions(SEGMENT_PERMISSIONS)
             .create()
             .and_then([this](auto& sharedMemoryObject) {
-                this->setSegmentId(static_cast<uint64_t>(iox::rp::BaseRelativePointer::registerPtr(
-                    sharedMemoryObject.getBaseAddress(), sharedMemoryObject.getSizeInBytes())));
+                auto maybeSegmentId = iox::memory::UntypedRelativePointer::registerPtr(
+                    sharedMemoryObject.getBaseAddress(), sharedMemoryObject.getSizeInBytes());
+                if (!maybeSegmentId.has_value())
+                {
+                    errorHandler(PoshError::MEPOO__SEGMENT_INSUFFICIENT_SEGMENT_IDS);
+                }
+                this->setSegmentId(static_cast<uint64_t>(maybeSegmentId.value()));
 
                 LogDebug() << "Roudi registered payload data segment "
-                           << iox::log::HexFormat(reinterpret_cast<uint64_t>(sharedMemoryObject.getBaseAddress()))
-                           << " with size " << sharedMemoryObject.getSizeInBytes() << " to id " << m_segmentId;
+                           << iox::log::hex(sharedMemoryObject.getBaseAddress()) << " with size "
+                           << sharedMemoryObject.getSizeInBytes() << " to id " << m_segmentId;
             })
             .or_else([](auto&) { errorHandler(PoshError::MEPOO__SEGMENT_UNABLE_TO_CREATE_SHARED_MEMORY_OBJECT); })
             .value());

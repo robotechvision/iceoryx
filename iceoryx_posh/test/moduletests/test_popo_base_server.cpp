@@ -75,14 +75,7 @@ class TestBaseServer : public Base
 
 using BaseServerTypes = Types<BaseServerWithMocks, UntypedServerWithMocks, TypedServerWithMocks>;
 
-#ifdef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
-#endif
-TYPED_TEST_SUITE(BaseServer_test, BaseServerTypes);
-#ifdef __clang__
-#pragma GCC diagnostic pop
-#endif
+TYPED_TEST_SUITE(BaseServer_test, BaseServerTypes, );
 
 template <typename SutType>
 class BaseServer_test : public Test
@@ -294,7 +287,7 @@ TYPED_TEST(BaseServer_test, GetCallbackForIsStateConditionSatisfiedReturnsCallba
 
     constexpr bool HAS_REQUESTS{true};
     EXPECT_CALL(this->sut->port(), hasNewRequests).WillOnce(Return(HAS_REQUESTS));
-    EXPECT_TRUE(callback());
+    EXPECT_TRUE((*callback)());
 }
 
 TYPED_TEST(BaseServer_test, DisableStateCallsUnderlyingPortAndTriggerHandle)

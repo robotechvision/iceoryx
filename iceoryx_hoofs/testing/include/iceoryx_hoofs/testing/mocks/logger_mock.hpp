@@ -18,24 +18,76 @@
 
 #include "iceoryx_hoofs/cxx/optional.hpp"
 #include "iceoryx_hoofs/log/logger.hpp"
+#include "iceoryx_hoofs/log/logging.hpp"
 #include "iceoryx_hoofs/log/logstream.hpp"
 
+#include <mutex>
 #include <vector>
 
-class Logger_Mock : public iox::log::Logger
+namespace iox
 {
+namespace testing
+{
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage) required to be able to easily test custom types
+#define IOX_LOGSTREAM_MOCK(logger)                                                                                     \
+    iox::log::LogStream((logger), "file", 42, "function", iox::log::LogLevel::TRACE).self()
+
+/// @brief This mock can be used to test implementations of LogStream::operator<< for custom types. It should be used
+/// with the 'IOX_LOGSTREAM_MOCK' macro
+/// @code
+/// iox::testing::Logger_Mock loggerMock;
+///
+/// MyType sut;
+/// IOX_LOGSTREAM_MOCK(loggerMock) << sut;
+///
+/// ASSERT_THAT(loggerMock.logs.size(), Eq(1U));
+/// EXPECT_THAT(loggerMock.logs[0].message, StrEq(EXPECTED_STRING_REPRESENTATION);
+/// @endcode
+class Logger_Mock : public log::TestingLoggerBase
+{
+    using Base = log::TestingLoggerBase;
+
   public:
-    Logger_Mock()
-        : iox::log::Logger("Mock", "Context for logger mock!", iox::log::LogLevel::kVerbose)
+    Logger_Mock() noexcept = default;
+
+    struct LogEntry
     {
+        std::string file;
+        int line{0};
+        std::string function;
+        log::LogLevel logLevel{iox::log::LogLevel::OFF};
+        std::string message;
+    };
+
+    std::vector<LogEntry> logs;
+
+  private:
+    /// @brief Overrides the base implementation to store the
+    void createLogMessageHeader(const char* file,
+                                const int line,
+                                const char* function,
+                                log::LogLevel logLevel) noexcept override
+    {
+        Base::assumeFlushed();
+
+        LogEntry logEntry;
+        logEntry.file = file;
+        logEntry.line = line;
+        logEntry.function = function;
+        logEntry.logLevel = logLevel;
+
+        logs.emplace_back(std::move(logEntry));
     }
 
-    void Log(const iox::log::LogEntry& entry) const noexcept override
+    void flush() noexcept override
     {
-        m_logs.push_back(entry);
+        const auto logBuffer = Base::getLogBuffer();
+        logs.back().message = logBuffer.buffer;
+        Base::assumeFlushed();
     }
-
-    mutable std::vector<iox::log::LogEntry> m_logs;
 };
+
+} // namespace testing
+} // namespace iox
 
 #endif // IOX_HOOFS_MOCKS_LOGGER_MOCK_HPP

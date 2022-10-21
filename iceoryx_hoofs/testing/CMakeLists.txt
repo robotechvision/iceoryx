@@ -15,14 +15,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-########## set hoofs internal target, needed by tests in components ##########
-#
-# TODO: we need something like internal public for internal build dependencies
-# instead of making the whole source folder public for internal dependency resolution
 
 iox_add_library(
     STATIC
-    TARGET                  ${PROJECT_NAME}_testing
+    TARGET                  iceoryx_hoofs_testing
     NAMESPACE               iceoryx_hoofs_testing
     PROJECT_PREFIX          ${PREFIX}
     PUBLIC_LIBS             GTest::gtest
@@ -34,10 +30,11 @@ iox_add_library(
     BUILD_INTERFACE         ${CMAKE_CURRENT_SOURCE_DIR}/include
     INSTALL_INTERFACE       include/${PREFIX}
     FILES
+        compile_test.cpp
+        logger.cpp
         mocks/time_mock.cpp
         mocks/error_handler_mock.cpp
         timing_test.cpp
-        compile_test.cpp
 )
 
 if(TEST_WITH_ADDITIONAL_USER)

@@ -22,8 +22,8 @@
 #include "iceoryx_hoofs/internal/posix_wrapper/ipc_channel.hpp"
 #include "iceoryx_hoofs/internal/posix_wrapper/shared_memory_object.hpp"
 #include "iceoryx_hoofs/internal/units/duration.hpp"
-#include "iceoryx_hoofs/platform/semaphore.hpp"
 #include "iceoryx_hoofs/posix_wrapper/unnamed_semaphore.hpp"
+#include "iceoryx_platform/semaphore.hpp"
 
 #include <cstdint>
 
@@ -62,18 +62,10 @@ class NamedPipe : public DesignPattern::Creation<NamedPipe, IpcChannelError>
     NamedPipe& operator=(NamedPipe&& rhs) noexcept;
     ~NamedPipe() noexcept;
 
-    /// @brief destroys an initialized named pipe.
-    /// @return is always successful
-    cxx::expected<IpcChannelError> destroy() noexcept;
-
     /// @brief removes a named pipe artifact from the system
     /// @return true if the artifact was removed, false when no artifact was found and
     ///         IpcChannelError::INTERNAL_LOGIC_ERROR when shm_unlink failed
     static cxx::expected<bool, IpcChannelError> unlinkIfExists(const IpcChannelName_t& name) noexcept;
-
-    /// @brief for compatibility with IpcChannelError
-    /// @return always false
-    cxx::expected<bool, IpcChannelError> isOutdated() noexcept;
 
     /// @brief tries to send a message via the named pipe. if the pipe is full IpcChannelError::TIMEOUT is returned
     /// @return on failure an error which describes the failure
@@ -122,6 +114,10 @@ class NamedPipe : public DesignPattern::Creation<NamedPipe, IpcChannelError>
     template <typename Prefix>
     static IpcChannelName_t convertName(const Prefix& p, const IpcChannelName_t& name) noexcept;
 
+    /// @brief destroys an initialized named pipe.
+    /// @return is always successful
+    cxx::expected<IpcChannelError> destroy() noexcept;
+
   private:
     cxx::optional<SharedMemoryObject> m_sharedMemory;
 
@@ -154,7 +150,7 @@ class NamedPipe : public DesignPattern::Creation<NamedPipe, IpcChannelError>
         static constexpr units::Duration WAIT_FOR_INIT_SLEEP_TIME = units::Duration::fromMilliseconds(1);
 
         std::atomic<uint64_t> initializationGuard{INVALID_DATA};
-        /// NOLINTJUSTIFICATION todo iox-#1196 replace with cxx::array implementation
+        /// NOLINTJUSTIFICATION @todo iox-#1614 replace with cxx::array implementation
         /// NOLINTNEXTLINE(hicpp-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
         cxx::optional<UnnamedSemaphore> semaphores[2U];
     };

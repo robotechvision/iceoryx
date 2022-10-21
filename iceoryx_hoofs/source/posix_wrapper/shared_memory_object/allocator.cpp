@@ -17,7 +17,7 @@
 
 #include "iceoryx_hoofs/internal/posix_wrapper/shared_memory_object/allocator.hpp"
 #include "iceoryx_hoofs/cxx/helplets.hpp"
-#include "iceoryx_hoofs/platform/platform_correction.hpp"
+#include "iceoryx_platform/platform_correction.hpp"
 
 #include <iostream>
 
@@ -30,7 +30,6 @@ Allocator::Allocator(void* const startAddress, const uint64_t length) noexcept
     : m_startAddress(static_cast<byte_t*>(startAddress))
     , m_length(length)
 {
-    /// @todo memset to set memory and to avoid the usage of unavailable memory
 }
 
 // NOLINTJUSTIFICATION allocation interface requires size and alignment as integral types

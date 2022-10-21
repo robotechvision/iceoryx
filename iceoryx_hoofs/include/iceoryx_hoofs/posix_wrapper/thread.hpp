@@ -20,8 +20,8 @@
 #include "iceoryx_hoofs/cxx/function.hpp"
 #include "iceoryx_hoofs/cxx/string.hpp"
 #include "iceoryx_hoofs/design_pattern/builder.hpp"
-#include "iceoryx_hoofs/platform/pthread.hpp"
 #include "iceoryx_hoofs/posix_wrapper/posix_call.hpp"
+#include "iceoryx_platform/pthread.hpp"
 
 #include <atomic>
 
@@ -33,13 +33,12 @@ constexpr uint64_t MAX_THREAD_NAME_LENGTH = 15U;
 
 using ThreadName_t = cxx::string<MAX_THREAD_NAME_LENGTH>;
 
-/// @todo remove free functions
+/// @todo iox-#1365 remove free functions
 void setThreadName(iox_pthread_t thread, const ThreadName_t& name) noexcept;
 ThreadName_t getThreadName(iox_pthread_t thread) noexcept;
 
 enum class ThreadError
 {
-    EMPTY_CALLABLE,
     INSUFFICIENT_MEMORY,
     INSUFFICIENT_PERMISSIONS,
     INSUFFICIENT_RESOURCES,
@@ -78,7 +77,7 @@ class Thread
     friend class cxx::optional<Thread>;
 
   private:
-    Thread() noexcept = default;
+    Thread(const ThreadName_t& name, const callable_t& callable) noexcept;
 
     static ThreadError errnoToEnum(const int errnoValue) noexcept;
 
@@ -87,6 +86,7 @@ class Thread
     iox_pthread_t m_threadHandle;
     callable_t m_callable;
     bool m_isThreadConstructed{false};
+    ThreadName_t m_threadName;
 };
 
 class ThreadBuilder

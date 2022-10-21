@@ -44,15 +44,6 @@ TEST_F(Thread_test, CreateThreadWithNonEmptyCallableSucceeds)
     EXPECT_TRUE(callableWasCalled);
 }
 
-TEST_F(Thread_test, CreateThreadWithEmptyCallableFails)
-{
-    ::testing::Test::RecordProperty("TEST_ID", "8058c282-ce33-42eb-80ed-4421ebac5652");
-    Thread::callable_t callable;
-    auto result = ThreadBuilder().create(sut, callable);
-    ASSERT_TRUE(result.has_error());
-    EXPECT_THAT(result.get_error(), Eq(ThreadError::EMPTY_CALLABLE));
-}
-
 TEST_F(Thread_test, DtorOfThreadBlocksUntilCallbackHasFinished)
 {
     ::testing::Test::RecordProperty("TEST_ID", "1062a036-e825-4f30-bfb8-00d5de47fdfd");
@@ -75,7 +66,7 @@ TEST_F(Thread_test, DtorOfThreadBlocksUntilCallbackHasFinished)
     sut.reset();
     end = std::chrono::steady_clock::now();
 
-    EXPECT_THAT((end - start).count(), Gt(TEST_WAIT_TIME.toNanoseconds()));
+    EXPECT_THAT((end - start).count(), Ge(TEST_WAIT_TIME.toNanoseconds()));
 }
 
 TEST_F(Thread_test, SetAndGetWithEmptyThreadNameIsWorking)
