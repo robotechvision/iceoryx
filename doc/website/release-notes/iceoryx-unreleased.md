@@ -95,6 +95,7 @@
 - `ReleativePointer::registerPtr` returns `cxx::optional` [\#605](https://github.com/eclipse-iceoryx/iceoryx/issues/605)
 - `cxx::function` is no longer nullable [\#1104](https://github.com/eclipse-iceoryx/iceoryx/issues/1104)
 - Renamed `BaseRelativePointer` to `UntypedRelativePointer` [\#605](https://github.com/eclipse-iceoryx/iceoryx/issues/605)
+- Prevent building GoogleTest when `GTest_DIR` is defined [\#1758](https://github.com/eclipse-iceoryx/iceoryx/issues/1758)
 
 **Workflow:**
 
@@ -774,3 +775,8 @@
     ```
 
     Have a look at the logger design document for more details on how to setup the testing logger.
+
+40. Changed the include path and namespace of several classes in `iceoryx_hoofs`:
+
+    * `iox::bar::foo` to `iox::foo`
+        * `iceoryx_hoofs/bar/foo.hpp` to `iox/foo.hpp`
