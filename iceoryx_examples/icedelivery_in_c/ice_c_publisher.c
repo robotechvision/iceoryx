@@ -47,7 +47,7 @@ void sending(void)
     options.historyCapacity = 10U;
     options.nodeName = "iox-c-publisher-node";
     iox_pub_storage_t publisherStorage;
-    iox_pub_t publisher = iox_pub_init(&publisherStorage, "Radar", "FrontLeft", "Object", &options);
+    iox_pub_t publisher = iox_pub_init(&publisherStorage, "DDS_CYCLONE", "std_msgs::msg::dds_::Float64_", "rt/chatter_pod", &options);
     //! [create publisher port]
 
     //! [send and print number]
@@ -56,13 +56,11 @@ void sending(void)
     while (!killswitch)
     {
         void* userPayload = NULL;
-        if (AllocationResult_SUCCESS == iox_pub_loan_chunk(publisher, &userPayload, sizeof(struct RadarObject)))
+        if (AllocationResult_SUCCESS == iox_pub_loan_chunk(publisher, &userPayload, sizeof(double)))
         {
-            struct RadarObject* sample = (struct RadarObject*)userPayload;
+            double* sample = (double*)userPayload;
 
-            sample->x = ct;
-            sample->y = ct;
-            sample->z = ct;
+            *sample = ct;
 
             printf("%s sent value: %.0f\n", APP_NAME, ct);
             fflush(stdout);
@@ -71,7 +69,7 @@ void sending(void)
 
             ++ct;
 
-            sleep_for(400);
+            // sleep_for(400);
         }
         else
         {

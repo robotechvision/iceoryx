@@ -32,6 +32,72 @@ struct RadarObject
     double y = 0.0;
     double z = 0.0;
 };
+
+typedef enum {
+  IOX_CHUNK_UNINITIALIZED,
+  IOX_CHUNK_CONTAINS_RAW_DATA,
+  IOX_CHUNK_CONTAINS_SERIALIZED_DATA
+} iox_shm_data_state_t;
+
+typedef struct ddsi_keyhash {
+  unsigned char value[16];
+} ddsi_keyhash_t;
+
+typedef int64_t dds_time_t;
+typedef union ddsi_guid_prefix {
+  unsigned char s[12];
+  uint32_t u[3];
+} ddsi_guid_prefix_t;
+typedef union ddsi_entityid {
+  uint32_t u;
+} ddsi_entityid_t;
+typedef struct ddsi_guid {
+  ddsi_guid_prefix_t prefix;
+  ddsi_entityid_t entityid;
+} ddsi_guid_t;
+
+struct iceoryx_header {
+  struct ddsi_guid guid;
+  dds_time_t tstamp;
+  uint32_t statusinfo;
+  uint32_t data_size;
+  unsigned char data_kind;
+  ddsi_keyhash_t keyhash;
+  iox_shm_data_state_t shm_data_state;
+};
+enum ddsi_serdata_kind {
+  SDK_EMPTY,
+  SDK_KEY,
+  SDK_DATA
+};
 //! [topic data]
+
+/*
+ * Copyright(c) 2006 to 2018 ADLINK Technology Limited and others
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Eclipse Distribution License
+ * v. 1.0 which is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+#include <assert.h>
+#include <errno.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <time.h>
+#include <sys/time.h>
+
+#define CLOCK_REALTIME 0
+#define DDS_NSECS_IN_SEC INT64_C(1000000000)
+
+dds_time_t dds_time(void)
+{
+  struct timespec ts;
+  (void)clock_gettime(CLOCK_REALTIME, &ts);
+  return (ts.tv_sec * DDS_NSECS_IN_SEC) + ts.tv_nsec;
+}
 
 #endif // IOX_EXAMPLES_ICEDELIVERY_TOPIC_DATA_HPP

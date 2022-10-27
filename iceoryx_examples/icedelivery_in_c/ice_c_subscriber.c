@@ -53,7 +53,7 @@ void receiving(void)
     options.nodeName = "iox-c-subscriber-node";
     iox_sub_storage_t subscriberStorage;
 
-    iox_sub_t subscriber = iox_sub_init(&subscriberStorage, "Radar", "FrontLeft", "Object", &options);
+    iox_sub_t subscriber = iox_sub_init(&subscriberStorage, "DDS_CYCLONE", "std_msgs::msg::dds_::Float64_", "rt/chatter_pod", &options);
     //! [create subscriber port]
 
     //! [receive and print data]
@@ -66,19 +66,19 @@ void receiving(void)
             // new sample every 400 ms and we check for new samples only every second
             while (ChunkReceiveResult_SUCCESS == iox_sub_take_chunk(subscriber, &userPayload))
             {
-                const struct RadarObject* sample = (const struct RadarObject*)(userPayload);
-                printf("%s got value: %.0f\n", APP_NAME, sample->x);
+                const double* sample = (const double*)(userPayload);
+                printf("%s got value: %.0f\n", APP_NAME, *sample);
                 fflush(stdout);
                 iox_sub_release_chunk(subscriber, userPayload);
             }
-            printf("\n");
+            // printf("\n");
         }
         else
         {
             printf("Not subscribed!\n");
         }
-
-        sleep_for(1000);
+        
+        // sleep_for(1000);
     }
     //! [receive and print data]
 

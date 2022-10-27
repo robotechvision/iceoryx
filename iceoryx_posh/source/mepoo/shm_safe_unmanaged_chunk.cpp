@@ -15,6 +15,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "iceoryx_posh/internal/mepoo/shm_safe_unmanaged_chunk.hpp"
+#include "iceoryx_posh/internal/log/posh_logging.hpp"
 
 namespace iox
 {
@@ -50,6 +51,9 @@ ShmSafeUnmanagedChunk::ShmSafeUnmanagedChunk(mepoo::SharedChunk chunk) noexcept
         /// @todo iox-#1196 Unify types to uint64_t
         m_chunkManagement =
             memory::RelativePointerData(static_cast<memory::RelativePointerData::identifier_t>(id), offset);
+        LogTrace()
+            << "create o " << (unsigned long)m_chunkManagement.offset()
+            << " i " << (unsigned long)m_chunkManagement.id();
     }
 }
 
@@ -61,6 +65,10 @@ SharedChunk ShmSafeUnmanagedChunk::releaseToSharedChunk() noexcept
     }
     auto chunkMgmt = memory::RelativePointer<mepoo::ChunkManagement>(m_chunkManagement.offset(),
                                                                      memory::segment_id_t{m_chunkManagement.id()});
+    LogTrace()
+        << "release o " << (unsigned long)m_chunkManagement.offset()
+        << " i " << (unsigned long)m_chunkManagement.id()
+        << " h " << (unsigned long)&chunkMgmt->m_chunkHeader;
     m_chunkManagement.reset();
     return SharedChunk(chunkMgmt.get());
 }
@@ -73,6 +81,10 @@ SharedChunk ShmSafeUnmanagedChunk::cloneToSharedChunk() noexcept
     }
     auto chunkMgmt = memory::RelativePointer<mepoo::ChunkManagement>(m_chunkManagement.offset(),
                                                                      memory::segment_id_t{m_chunkManagement.id()});
+    LogTrace()
+        << "clone o " << (unsigned long)m_chunkManagement.offset()
+        << " i " << (unsigned long)m_chunkManagement.id()
+        << " h " << (unsigned long)&chunkMgmt->m_chunkHeader;
     chunkMgmt->m_referenceCounter.fetch_add(1U, std::memory_order_relaxed);
     return SharedChunk(chunkMgmt.get());
 }
@@ -90,6 +102,10 @@ ChunkHeader* ShmSafeUnmanagedChunk::getChunkHeader() noexcept
     }
     auto chunkMgmt = memory::RelativePointer<mepoo::ChunkManagement>(m_chunkManagement.offset(),
                                                                      memory::segment_id_t{m_chunkManagement.id()});
+    LogTrace()
+        << "get o " << (unsigned long)m_chunkManagement.offset()
+        << " i " << (unsigned long)m_chunkManagement.id()
+        << " h " << (unsigned long)&chunkMgmt->m_chunkHeader;
     return chunkMgmt->m_chunkHeader.get();
 }
 

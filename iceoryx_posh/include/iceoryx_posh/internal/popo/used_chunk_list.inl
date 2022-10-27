@@ -17,7 +17,7 @@
 
 #ifndef IOX_POSH_POPO_USED_CHUNK_LIST_INL
 #define IOX_POSH_POPO_USED_CHUNK_LIST_INL
-
+#include "iceoryx_posh/internal/log/posh_logging.hpp"
 namespace iox
 {
 namespace popo
@@ -49,6 +49,7 @@ bool UsedChunkList<Capacity>::insert(mepoo::SharedChunk chunk) noexcept
         m_usedListHead = m_freeListHead;
 
         m_listData[m_usedListHead] = DataElement_t(chunk);
+        LogTrace() << "adding " << (unsigned long)m_listData[m_usedListHead].getChunkHeader();
 
         // set freeListHead to the next free entry
         m_freeListHead = nextFree;
@@ -76,6 +77,7 @@ bool UsedChunkList<Capacity>::remove(const mepoo::ChunkHeader* chunkHeader, mepo
             // does the entry match the one we want to remove?
             if (m_listData[current].getChunkHeader() == chunkHeader)
             {
+                LogTrace() << "removing " << (unsigned long)chunkHeader;
                 chunk = m_listData[current].releaseToSharedChunk();
 
                 // remove index from used list
@@ -111,6 +113,7 @@ void UsedChunkList<Capacity>::cleanup() noexcept
     {
         if (!data.isLogicalNullptr())
         {
+            LogTrace() << "cleaning " << (unsigned long)data.getChunkHeader();
             // release ownership by creating a SharedChunk
             data.releaseToSharedChunk();
         }
@@ -144,7 +147,10 @@ void UsedChunkList<Capacity>::init() noexcept
     // clear data
     for (auto& data : m_listData)
     {
-        data.releaseToSharedChunk();
+        if (!data.isLogicalNullptr()) {
+            LogTrace() << "cleaning(init) " << (unsigned long)data.getChunkHeader();
+            data.releaseToSharedChunk();
+        }
     }
 
     m_synchronizer.clear(std::memory_order_release);
