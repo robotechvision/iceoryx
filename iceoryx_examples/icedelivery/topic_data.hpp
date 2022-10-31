@@ -17,21 +17,21 @@
 #define IOX_EXAMPLES_ICEDELIVERY_TOPIC_DATA_HPP
 
 //! [topic data]
-struct RadarObject
-{
-    RadarObject() noexcept
-    {
-    }
-    RadarObject(double x, double y, double z) noexcept
-        : x(x)
-        , y(y)
-        , z(z)
-    {
-    }
-    double x = 0.0;
-    double y = 0.0;
-    double z = 0.0;
-};
+// struct RadarObject
+// {
+//     RadarObject() noexcept
+//     {
+//     }
+//     RadarObject(double x, double y, double z) noexcept
+//         : x(x)
+//         , y(y)
+//         , z(z)
+//     {
+//     }
+//     double x = 0.0;
+//     double y = 0.0;
+//     double z = 0.0;
+// };
 
 typedef enum {
   IOX_CHUNK_UNINITIALIZED,
@@ -65,11 +65,44 @@ struct iceoryx_header {
   ddsi_keyhash_t keyhash;
   iox_shm_data_state_t shm_data_state;
 };
+typedef struct iceoryx_header iceoryx_header_t;
 enum ddsi_serdata_kind {
   SDK_EMPTY,
   SDK_KEY,
   SDK_DATA
 };
+
+
+#include <pthread.h>
+typedef struct {
+  pthread_mutex_t mutex;
+} ddsrt_mutex_t;
+enum shm_monitor_states {
+    SHM_MONITOR_NOT_RUNNING = 0,
+    SHM_MONITOR_RUNNING = 1
+};
+
+/// @brief abstraction for monitoring the shared memory communication with an internal
+///        thread responsible for reacting on received data via shared memory
+struct shm_monitor {
+    ddsrt_mutex_t m_lock;
+    // iox_listener_t m_listener;
+
+    // //use this if we wait but want to wake up for some reason e.g. terminate   
+    // iox_user_trigger_t m_wakeup_trigger;
+   
+    uint32_t m_number_of_attached_readers;
+    uint32_t m_state;
+};
+typedef struct {  
+  ddsrt_mutex_t mutex;
+  struct shm_monitor *monitor;
+  const double* chunks[10000];
+  int chunksCnt;
+  pthread_mutex_t chunks_mutex;
+  pthread_cond_t new_chunks_trigger;
+  // iox_sub_t iox_sub;
+} iox_sub_context_t;
 //! [topic data]
 
 /*

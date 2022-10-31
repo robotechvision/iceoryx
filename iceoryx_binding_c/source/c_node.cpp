@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
 #include "iceoryx_posh/iceoryx_posh_types.hpp"
 #include "iceoryx_posh/internal/runtime/node_data.hpp"
@@ -47,17 +48,17 @@ class NodeBindingExtension : public iox::runtime::Node
 };
 
 iox_node_t iox_node_create(const char* const nodeName)
-{
+{ CHECK_EXCL
     return PoshRuntime::getInstance().createNode(NodeProperty(NodeName_t(iox::cxx::TruncateToCapacity, nodeName), 0u));
-}
+UNCHECK_EXCL }
 
 void iox_node_destroy(iox_node_t const self)
-{
+{ CHECK_EXCL
     NodeBindingExtension(self).destroy();
-}
+UNCHECK_EXCL }
 
 uint64_t iox_node_get_name(iox_node_t const self, char* const name, const uint64_t nameCapacity)
-{
+{ CHECK_EXCL
     if (name == nullptr)
     {
         return 0U;
@@ -68,10 +69,10 @@ uint64_t iox_node_get_name(iox_node_t const self, char* const name, const uint64
     name[nameCapacity - 1U] = '\0'; // strncpy doesn't add a null-termination if destination is smaller than source
 
     return nameAsString.size();
-}
+UNCHECK_EXCL }
 
 uint64_t iox_node_get_runtime_name(iox_node_t const self, char* const name, const uint64_t nameCapacity)
-{
+{ CHECK_EXCL
     if (name == nullptr)
     {
         return 0U;
@@ -82,4 +83,4 @@ uint64_t iox_node_get_runtime_name(iox_node_t const self, char* const name, cons
     name[nameCapacity - 1U] = '\0'; // strncpy doesn't add a null-termination if destination is smaller than source
 
     return nameAsString.size();
-}
+UNCHECK_EXCL }

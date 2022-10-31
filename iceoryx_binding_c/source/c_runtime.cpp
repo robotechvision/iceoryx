@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
 #include "iceoryx_posh/runtime/posh_runtime.hpp"
 
@@ -25,7 +26,7 @@ extern "C" {
 }
 
 void iox_runtime_init(const char* const name)
-{
+{ CHECK_EXCL
     if (name == nullptr)
     {
         LogError() << "Runtime name is a nullptr!";
@@ -38,10 +39,10 @@ void iox_runtime_init(const char* const name)
     }
 
     PoshRuntime::initRuntime(RuntimeName_t(iox::cxx::TruncateToCapacity, name));
-}
+UNCHECK_EXCL }
 
 uint64_t iox_runtime_get_instance_name(char* const name, const uint64_t nameLength)
-{
+{ CHECK_EXCL
     if (name == nullptr)
     {
         return 0U;
@@ -52,9 +53,9 @@ uint64_t iox_runtime_get_instance_name(char* const name, const uint64_t nameLeng
     name[nameLength - 1U] = '\0'; // strncpy doesn't add a null-termination if destination is smaller than source
 
     return instanceName.size();
-}
+UNCHECK_EXCL }
 
 void iox_runtime_shutdown()
-{
+{ CHECK_EXCL
     PoshRuntime::getInstance().shutdown();
-}
+UNCHECK_EXCL }

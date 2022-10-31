@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
 #include "iceoryx_binding_c/internal/c2cpp_enum_translation.hpp"
 #include "iceoryx_binding_c/internal/cpp2c_enum_translation.hpp"
@@ -39,7 +40,7 @@ static uint64_t notification_info_vector_to_c_array(const WaitSet<>::Notificatio
                                                     iox_notification_info_t* notificationInfoArray,
                                                     const uint64_t notificationInfoArrayCapacity,
                                                     uint64_t* missedElements)
-{
+{ CHECK_EXCL
     uint64_t notificationInfoArraySize = 0U;
     uint64_t triggerVectorSize = triggerVector.size();
     if (triggerVectorSize > notificationInfoArrayCapacity)
@@ -59,30 +60,30 @@ static uint64_t notification_info_vector_to_c_array(const WaitSet<>::Notificatio
     }
 
     return notificationInfoArraySize;
-}
+UNCHECK_EXCL }
 
 iox_ws_t iox_ws_init(iox_ws_storage_t* self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     auto* me = new cpp2c_WaitSet();
     self->do_not_touch_me[0] = reinterpret_cast<uint64_t>(me);
     return me;
-}
+UNCHECK_EXCL }
 
 void iox_ws_deinit(iox_ws_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     delete self;
-}
+UNCHECK_EXCL }
 
 uint64_t iox_ws_timed_wait(iox_ws_t const self,
                            struct timespec timeout,
                            iox_notification_info_t* const notificationInfoArray,
                            const uint64_t notificationInfoArrayCapacity,
                            uint64_t* missedElements)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(missedElements != nullptr);
 
@@ -90,50 +91,50 @@ uint64_t iox_ws_timed_wait(iox_ws_t const self,
                                                notificationInfoArray,
                                                notificationInfoArrayCapacity,
                                                missedElements);
-}
+UNCHECK_EXCL }
 
 uint64_t iox_ws_wait(iox_ws_t const self,
                      iox_notification_info_t* const notificationInfoArray,
                      const uint64_t notificationInfoArrayCapacity,
                      uint64_t* missedElements)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(missedElements != nullptr);
 
     return notification_info_vector_to_c_array(
         self->wait(), notificationInfoArray, notificationInfoArrayCapacity, missedElements);
-}
+UNCHECK_EXCL }
 
 uint64_t iox_ws_size(iox_ws_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     return self->size();
-}
+UNCHECK_EXCL }
 
 uint64_t iox_ws_capacity(iox_ws_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     return self->capacity();
-}
+UNCHECK_EXCL }
 
 void iox_ws_mark_for_destruction(iox_ws_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     self->markForDestruction();
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_subscriber_state(iox_ws_t const self,
                                                  iox_sub_t const subscriber,
                                                  const iox_SubscriberState subscriberState,
                                                  const uint64_t eventId,
                                                  void (*callback)(iox_sub_t))
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(subscriber != nullptr);
 
     auto result = self->attachState(*subscriber, c2cpp::subscriberState(subscriberState), eventId, {callback, nullptr});
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_subscriber_state_with_context_data(iox_ws_t const self,
                                                                    iox_sub_t const subscriber,
@@ -141,7 +142,7 @@ iox_WaitSetResult iox_ws_attach_subscriber_state_with_context_data(iox_ws_t cons
                                                                    const uint64_t eventId,
                                                                    void (*callback)(iox_sub_t, void*),
                                                                    void* const contextData)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(subscriber != nullptr);
 
@@ -152,20 +153,20 @@ iox_WaitSetResult iox_ws_attach_subscriber_state_with_context_data(iox_ws_t cons
     auto result =
         self->attachState(*subscriber, c2cpp::subscriberState(subscriberState), eventId, notificationCallback);
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_subscriber_event(iox_ws_t const self,
                                                  iox_sub_t const subscriber,
                                                  const iox_SubscriberEvent subscriberEvent,
                                                  const uint64_t eventId,
                                                  void (*callback)(iox_sub_t))
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(subscriber != nullptr);
 
     auto result = self->attachEvent(*subscriber, c2cpp::subscriberEvent(subscriberEvent), eventId, {callback, nullptr});
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_subscriber_event_with_context_data(iox_ws_t const self,
                                                                    iox_sub_t const subscriber,
@@ -173,7 +174,7 @@ iox_WaitSetResult iox_ws_attach_subscriber_event_with_context_data(iox_ws_t cons
                                                                    const uint64_t eventId,
                                                                    void (*callback)(iox_sub_t, void*),
                                                                    void* const contextData)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(subscriber != nullptr);
 
@@ -184,26 +185,26 @@ iox_WaitSetResult iox_ws_attach_subscriber_event_with_context_data(iox_ws_t cons
     auto result =
         self->attachEvent(*subscriber, c2cpp::subscriberEvent(subscriberEvent), eventId, notificationCallback);
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_user_trigger_event(iox_ws_t const self,
                                                    iox_user_trigger_t const userTrigger,
                                                    const uint64_t eventId,
                                                    void (*callback)(iox_user_trigger_t))
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(userTrigger != nullptr);
 
     auto result = self->attachEvent(*userTrigger, eventId, {callback, nullptr});
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_user_trigger_event_with_context_data(iox_ws_t const self,
                                                                      iox_user_trigger_t const userTrigger,
                                                                      const uint64_t eventId,
                                                                      void (*callback)(iox_user_trigger_t, void*),
                                                                      void* const contextData)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(userTrigger != nullptr);
 
@@ -213,48 +214,48 @@ iox_WaitSetResult iox_ws_attach_user_trigger_event_with_context_data(iox_ws_t co
 
     auto result = self->attachEvent(*userTrigger, eventId, notificationCallback);
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 void iox_ws_detach_subscriber_event(iox_ws_t const self,
                                     iox_sub_t const subscriber,
                                     const iox_SubscriberEvent subscriberEvent)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(subscriber != nullptr);
 
     self->detachEvent(*subscriber, c2cpp::subscriberEvent(subscriberEvent));
-}
+UNCHECK_EXCL }
 
 void iox_ws_detach_subscriber_state(iox_ws_t const self,
                                     iox_sub_t const subscriber,
                                     const iox_SubscriberState subscriberState)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(subscriber != nullptr);
 
     self->detachState(*subscriber, c2cpp::subscriberState(subscriberState));
-}
+UNCHECK_EXCL }
 
 void iox_ws_detach_user_trigger_event(iox_ws_t const self, iox_user_trigger_t const userTrigger)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(userTrigger != nullptr);
 
     self->detachEvent(*userTrigger);
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_client_event(const iox_ws_t self,
                                              const iox_client_t client,
                                              const iox_ClientEvent clientEvent,
                                              const uint64_t eventId,
                                              void (*callback)(iox_client_t))
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(client != nullptr);
 
     auto result = self->attachEvent(*client, c2cpp::clientEvent(clientEvent), eventId, {callback, nullptr});
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_client_event_with_context_data(iox_ws_t const self,
                                                                iox_client_t const client,
@@ -262,7 +263,7 @@ iox_WaitSetResult iox_ws_attach_client_event_with_context_data(iox_ws_t const se
                                                                const uint64_t eventId,
                                                                void (*callback)(iox_client_t, void*),
                                                                void* const contextData)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(client != nullptr);
 
@@ -272,20 +273,20 @@ iox_WaitSetResult iox_ws_attach_client_event_with_context_data(iox_ws_t const se
 
     auto result = self->attachEvent(*client, c2cpp::clientEvent(clientEvent), eventId, notificationCallback);
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_client_state(const iox_ws_t self,
                                              const iox_client_t client,
                                              const iox_ClientState clientState,
                                              const uint64_t eventId,
                                              void (*callback)(iox_client_t))
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(client != nullptr);
 
     auto result = self->attachState(*client, c2cpp::clientState(clientState), eventId, {callback, nullptr});
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_client_state_with_context_data(iox_ws_t const self,
                                                                iox_client_t const client,
@@ -293,7 +294,7 @@ iox_WaitSetResult iox_ws_attach_client_state_with_context_data(iox_ws_t const se
                                                                const uint64_t eventId,
                                                                void (*callback)(iox_client_t, void*),
                                                                void* const contextData)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(client != nullptr);
 
@@ -303,36 +304,36 @@ iox_WaitSetResult iox_ws_attach_client_state_with_context_data(iox_ws_t const se
 
     auto result = self->attachState(*client, c2cpp::clientState(clientState), eventId, notificationCallback);
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 void iox_ws_detach_client_event(iox_ws_t const self, iox_client_t const client, const ENUM iox_ClientEvent clientEvent)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(client != nullptr);
 
     self->detachEvent(*client, c2cpp::clientEvent(clientEvent));
-}
+UNCHECK_EXCL }
 
 void iox_ws_detach_client_state(iox_ws_t const self, iox_client_t const client, const ENUM iox_ClientState clientState)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(client != nullptr);
 
     self->detachState(*client, c2cpp::clientState(clientState));
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_server_event(const iox_ws_t self,
                                              const iox_server_t server,
                                              const ENUM iox_ServerEvent serverEvent,
                                              const uint64_t eventId,
                                              void (*callback)(iox_server_t))
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(server != nullptr);
 
     auto result = self->attachEvent(*server, c2cpp::serverEvent(serverEvent), eventId, {callback, nullptr});
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_server_event_with_context_data(iox_ws_t const self,
                                                                iox_server_t const server,
@@ -340,7 +341,7 @@ iox_WaitSetResult iox_ws_attach_server_event_with_context_data(iox_ws_t const se
                                                                const uint64_t eventId,
                                                                void (*callback)(iox_server_t, void*),
                                                                void* const contextData)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(server != nullptr);
 
@@ -350,20 +351,20 @@ iox_WaitSetResult iox_ws_attach_server_event_with_context_data(iox_ws_t const se
 
     auto result = self->attachEvent(*server, c2cpp::serverEvent(serverEvent), eventId, notificationCallback);
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_server_state(const iox_ws_t self,
                                              const iox_server_t server,
                                              const ENUM iox_ServerState serverState,
                                              const uint64_t eventId,
                                              void (*callback)(iox_server_t))
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(server != nullptr);
 
     auto result = self->attachState(*server, c2cpp::serverState(serverState), eventId, {callback, nullptr});
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_server_state_with_context_data(iox_ws_t const self,
                                                                iox_server_t const server,
@@ -371,7 +372,7 @@ iox_WaitSetResult iox_ws_attach_server_state_with_context_data(iox_ws_t const se
                                                                const uint64_t eventId,
                                                                void (*callback)(iox_server_t, void*),
                                                                void* const contextData)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(server != nullptr);
 
@@ -381,37 +382,37 @@ iox_WaitSetResult iox_ws_attach_server_state_with_context_data(iox_ws_t const se
 
     auto result = self->attachState(*server, c2cpp::serverState(serverState), eventId, notificationCallback);
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 void iox_ws_detach_server_event(iox_ws_t const self, iox_server_t const server, const ENUM iox_ServerEvent serverEvent)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(server != nullptr);
 
     self->detachEvent(*server, c2cpp::serverEvent(serverEvent));
-}
+UNCHECK_EXCL }
 
 void iox_ws_detach_server_state(iox_ws_t const self, iox_server_t const server, const ENUM iox_ServerState serverState)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(server != nullptr);
 
     self->detachState(*server, c2cpp::serverState(serverState));
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult iox_ws_attach_service_discovery_event(const iox_ws_t self,
                                                         const iox_service_discovery_t serviceDiscovery,
                                                         const ENUM iox_ServiceDiscoveryEvent serviceDiscoveryEvent,
                                                         const uint64_t eventId,
                                                         void (*callback)(iox_service_discovery_t))
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(serviceDiscovery != nullptr);
 
     auto result = self->attachEvent(
         *serviceDiscovery, c2cpp::serviceDiscoveryEvent(serviceDiscoveryEvent), eventId, {callback, nullptr});
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_WaitSetResult
 iox_ws_attach_service_discovery_event_with_context_data(iox_ws_t const self,
@@ -420,7 +421,7 @@ iox_ws_attach_service_discovery_event_with_context_data(iox_ws_t const self,
                                                         const uint64_t eventId,
                                                         void (*callback)(iox_service_discovery_t, void*),
                                                         void* const contextData)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(serviceDiscovery != nullptr);
 
@@ -431,14 +432,14 @@ iox_ws_attach_service_discovery_event_with_context_data(iox_ws_t const self,
     auto result = self->attachEvent(
         *serviceDiscovery, c2cpp::serviceDiscoveryEvent(serviceDiscoveryEvent), eventId, notificationCallback);
     return (result.has_error()) ? cpp2c::waitSetResult(result.get_error()) : iox_WaitSetResult::WaitSetResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 void iox_ws_detach_service_discovery_event(iox_ws_t const self,
                                            iox_service_discovery_t const serviceDiscovery,
                                            const ENUM iox_ServiceDiscoveryEvent serviceDiscoveryEvent)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(serviceDiscovery != nullptr);
 
     self->detachEvent(*serviceDiscovery, c2cpp::serviceDiscoveryEvent(serviceDiscoveryEvent));
-}
+UNCHECK_EXCL }

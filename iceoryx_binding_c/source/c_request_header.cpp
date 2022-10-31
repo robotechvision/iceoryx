@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
 #include "iceoryx_posh/popo/rpc_header.hpp"
 
@@ -27,78 +28,78 @@ extern "C" {
 }
 
 iox_request_header_t iox_request_header_from_payload(void* const payload)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(payload != nullptr);
 
     return RequestHeader::fromPayload(payload);
-}
+UNCHECK_EXCL }
 
 iox_const_request_header_t iox_request_header_from_payload_const(const void* const payload)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(payload != nullptr);
 
     return RequestHeader::fromPayload(payload);
-}
+UNCHECK_EXCL }
 
 void iox_request_header_set_sequence_id(iox_request_header_t const self, const int64_t sequenceId)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     self->setSequenceId(sequenceId);
-}
+UNCHECK_EXCL }
 
 uint8_t iox_request_header_get_rpc_header_version(iox_request_header_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return self->getRpcHeaderVersion();
-}
+UNCHECK_EXCL }
 
 uint8_t iox_request_header_get_rpc_header_version_const(iox_const_request_header_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return self->getRpcHeaderVersion();
-}
+UNCHECK_EXCL }
 
 int64_t iox_request_header_get_sequence_id(iox_request_header_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return self->getSequenceId();
-}
+UNCHECK_EXCL }
 
 int64_t iox_request_header_get_sequence_id_const(iox_const_request_header_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return self->getSequenceId();
-}
+UNCHECK_EXCL }
 
 void* iox_request_header_get_user_payload(iox_request_header_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return self->getUserPayload();
-}
+UNCHECK_EXCL }
 
 const void* iox_request_header_get_user_payload_const(iox_const_request_header_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return self->getUserPayload();
-}
+UNCHECK_EXCL }
 
 iox_chunk_header_t* iox_request_header_get_chunk_header(iox_request_header_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return reinterpret_cast<iox_chunk_header_t*>(self->getChunkHeader());
-}
+UNCHECK_EXCL }
 
 const iox_chunk_header_t* iox_request_header_get_chunk_header_const(iox_const_request_header_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return reinterpret_cast<const iox_chunk_header_t*>(self->getChunkHeader());
-}
+UNCHECK_EXCL }

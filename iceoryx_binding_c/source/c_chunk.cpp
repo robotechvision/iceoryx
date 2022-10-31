@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
 #include "iceoryx_posh/mepoo/chunk_header.hpp"
 

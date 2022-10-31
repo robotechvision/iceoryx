@@ -1,4 +1,4 @@
-// Copyright (c) 2022 by Apex.AI Inc. All rights reserved.
+// Copyright (c) 2021 by Apex.AI Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,16 +13,25 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
-#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
-#include "iceoryx_binding_c/error_handling/error_handling.hpp"
+#ifndef IOX_BINDING_C_SLEEP_FOR_H
+#define IOX_BINDING_C_SLEEP_FOR_H
 
-namespace iox
+#ifdef _WIN32
+#include <windows.h>
+
+void sleep_for(uint32_t milliseconds)
 {
-const char* C_BINDING_ERROR_NAMES[] = {C_BINDING_ERRORS(CREATE_ICEORYX_ERROR_STRING)};
-
-const char* asStringLiteral(const CBindingError error) noexcept
-{
-    return C_BINDING_ERROR_NAMES[errorToStringIndex(error)];
+    Sleep((uint64_t)milliseconds);
 }
-} // namespace iox
+
+#else
+#include <unistd.h>
+
+void sleep_for(unsigned int milliseconds)
+{
+    usleep(milliseconds * 1000U);
+}
+#endif
+
+#endif

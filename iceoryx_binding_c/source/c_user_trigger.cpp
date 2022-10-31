@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
 #include "iceoryx_binding_c/internal/cpp2c_enum_translation.hpp"
 #include "iceoryx_posh/popo/user_trigger.hpp"
@@ -26,7 +27,7 @@ extern "C" {
 }
 
 iox_user_trigger_t iox_user_trigger_init(iox_user_trigger_storage_t* self)
-{
+{ CHECK_EXCL
     if (self == nullptr)
     {
         LogWarn() << "user trigger initialization skipped - null pointer provided for iox_user_trigger_storage_t";
@@ -35,21 +36,21 @@ iox_user_trigger_t iox_user_trigger_init(iox_user_trigger_storage_t* self)
     auto* me = new UserTrigger();
     self->do_not_touch_me[0] = reinterpret_cast<uint64_t>(me);
     return me;
-}
+UNCHECK_EXCL }
 
 void iox_user_trigger_deinit(iox_user_trigger_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     delete self;
-}
+UNCHECK_EXCL }
 
 void iox_user_trigger_trigger(iox_user_trigger_t const self)
-{
+{ CHECK_EXCL
     self->trigger();
-}
+UNCHECK_EXCL }
 
 bool iox_user_trigger_has_triggered(iox_user_trigger_t const self)
-{
+{ CHECK_EXCL
     return self->hasTriggered();
-}
+UNCHECK_EXCL }

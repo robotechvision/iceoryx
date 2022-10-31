@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
 
 #include "iceoryx_binding_c/enums.h"
@@ -76,7 +77,7 @@ iox_sub_t iox_sub_init(iox_sub_storage_t* self,
                        const char* const instance,
                        const char* const event,
                        const iox_sub_options_t* const options)
-{
+{ CHECK_EXCL2
     if (self == nullptr)
     {
         LogWarn() << "subscriber initialization skipped - null pointer provided for iox_sub_storage_t";
@@ -122,35 +123,35 @@ iox_sub_t iox_sub_init(iox_sub_storage_t* self,
 
     self->do_not_touch_me[0] = reinterpret_cast<uint64_t>(me);
     return me;
-}
+UNCHECK_EXCL2 }
 
 void iox_sub_deinit(iox_sub_t const self)
-{
+{ CHECK_EXCL2
     iox::cxx::Expects(self != nullptr);
 
     auto addressOfSelf = reinterpret_cast<uint64_t>(self);
     auto* selfWithStoragePointer = reinterpret_cast<SubscriberWithStoragePointer*>(addressOfSelf - sizeof(void*));
 
     delete selfWithStoragePointer;
-}
+UNCHECK_EXCL2 }
 
 void iox_sub_subscribe(iox_sub_t const self)
-{
+{ CHECK_EXCL2
     SubscriberPortUser(self->m_portData).subscribe();
-}
+UNCHECK_EXCL2 }
 
 void iox_sub_unsubscribe(iox_sub_t const self)
-{
+{ CHECK_EXCL2
     SubscriberPortUser(self->m_portData).unsubscribe();
-}
+UNCHECK_EXCL2 }
 
 iox_SubscribeState iox_sub_get_subscription_state(iox_sub_t const self)
-{
+{ CHECK_EXCL2
     return cpp2c::subscribeState(SubscriberPortUser(self->m_portData).getSubscriptionState());
-}
+UNCHECK_EXCL2 }
 
 iox_ChunkReceiveResult iox_sub_take_chunk(iox_sub_t const self, const void** const userPayload)
-{
+{ CHECK_EXCL2
     auto result = SubscriberPortUser(self->m_portData).tryGetChunk();
     if (result.has_error())
     {
@@ -159,29 +160,29 @@ iox_ChunkReceiveResult iox_sub_take_chunk(iox_sub_t const self, const void** con
 
     *userPayload = result.value()->userPayload();
     return ChunkReceiveResult_SUCCESS;
-}
+UNCHECK_EXCL2 }
 
 void iox_sub_release_chunk(iox_sub_t const self, const void* const userPayload)
-{
+{ CHECK_EXCL2
     SubscriberPortUser(self->m_portData).releaseChunk(ChunkHeader::fromUserPayload(userPayload));
-}
+UNCHECK_EXCL2 }
 
 void iox_sub_release_queued_chunks(iox_sub_t const self)
-{
+{ CHECK_EXCL2
     SubscriberPortUser(self->m_portData).releaseQueuedChunks();
-}
+UNCHECK_EXCL2 }
 
 bool iox_sub_has_chunks(iox_sub_t const self)
-{
+{ CHECK_EXCL2
     return SubscriberPortUser(self->m_portData).hasNewChunks();
-}
+UNCHECK_EXCL2 }
 
 bool iox_sub_has_lost_chunks(iox_sub_t const self)
-{
+{ CHECK_EXCL2
     return SubscriberPortUser(self->m_portData).hasLostChunksSinceLastCall();
-}
+UNCHECK_EXCL2 }
 
 iox_service_description_t iox_sub_get_service_description(iox_sub_t const self)
-{
+{ CHECK_EXCL2
     return TranslateServiceDescription(SubscriberPortUser(self->m_portData).getCaProServiceDescription());
-}
+UNCHECK_EXCL2 }

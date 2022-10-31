@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
 #include "iceoryx_binding_c/internal/c2cpp_enum_translation.hpp"
 #include "iceoryx_binding_c/internal/cpp2c_service_description_translation.hpp"
@@ -28,20 +29,20 @@ extern "C" {
 }
 
 iox_service_discovery_t iox_service_discovery_init(iox_service_discovery_storage_t* self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     auto* me = new ServiceDiscovery();
     self->do_not_touch_me[0] = reinterpret_cast<uint64_t>(me);
     return me;
-}
+UNCHECK_EXCL }
 
 void iox_service_discovery_deinit(iox_service_discovery_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     delete self;
-}
+UNCHECK_EXCL }
 
 uint64_t iox_service_discovery_find_service(iox_service_discovery_t const self,
                                             const char* const service,
@@ -51,7 +52,7 @@ uint64_t iox_service_discovery_find_service(iox_service_discovery_t const self,
                                             const uint64_t serviceContainerCapacity,
                                             uint64_t* missedServices,
                                             const ENUM iox_MessagingPattern pattern)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(serviceContainer != nullptr);
     iox::cxx::Expects(missedServices != nullptr);
@@ -87,7 +88,7 @@ uint64_t iox_service_discovery_find_service(iox_service_discovery_t const self,
     self->findService(maybeService, maybeInstance, maybeEvent, filter, c2cpp::messagingPattern(pattern));
 
     return currentSize;
-}
+UNCHECK_EXCL }
 
 void iox_service_discovery_find_service_apply_callable(iox_service_discovery_t const self,
                                                        const char* const service,
@@ -95,7 +96,7 @@ void iox_service_discovery_find_service_apply_callable(iox_service_discovery_t c
                                                        const char* const event,
                                                        void (*callable)(const iox_service_description_t),
                                                        const ENUM iox_MessagingPattern pattern)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(callable != nullptr);
 
@@ -117,7 +118,7 @@ void iox_service_discovery_find_service_apply_callable(iox_service_discovery_t c
 
     auto filter = [&](const capro::ServiceDescription& s) { callable(TranslateServiceDescription(s)); };
     self->findService(maybeService, maybeInstance, maybeEvent, filter, c2cpp::messagingPattern(pattern));
-}
+UNCHECK_EXCL }
 
 void iox_service_discovery_find_service_apply_callable_with_context_data(
     iox_service_discovery_t const self,
@@ -127,7 +128,7 @@ void iox_service_discovery_find_service_apply_callable_with_context_data(
     void (*callable)(const iox_service_description_t, void*),
     void* const contextData,
     const ENUM iox_MessagingPattern pattern)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(callable != nullptr);
 
@@ -149,4 +150,4 @@ void iox_service_discovery_find_service_apply_callable_with_context_data(
 
     auto filter = [&](const capro::ServiceDescription& s) { callable(TranslateServiceDescription(s), contextData); };
     self->findService(maybeService, maybeInstance, maybeEvent, filter, c2cpp::messagingPattern(pattern));
-}
+UNCHECK_EXCL }

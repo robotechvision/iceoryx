@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
 #include "iceoryx_hoofs/log/logging.hpp"
 
@@ -23,7 +24,7 @@ extern "C" {
 using namespace iox::log;
 
 LogLevel toLogLevel(enum iox_LogLevel level)
-{
+{ CHECK_EXCL
     switch (level)
     {
     case Iceoryx_LogLevel_Off:
@@ -43,9 +44,9 @@ LogLevel toLogLevel(enum iox_LogLevel level)
     default:
         return LogLevel::TRACE;
     }
-}
+UNCHECK_EXCL }
 
 void iox_set_loglevel(enum iox_LogLevel level)
-{
+{ CHECK_EXCL
     iox::log::Logger::setLogLevel(toLogLevel(level));
-}
+UNCHECK_EXCL }

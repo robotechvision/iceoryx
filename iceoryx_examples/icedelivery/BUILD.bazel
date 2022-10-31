@@ -21,6 +21,11 @@ cc_library(
     hdrs = ["topic_data.hpp"],
 )
 
+cc_library(
+    name = "sleep_for",
+    hdrs = ["sleep_for.h"],
+)
+
 cc_binary(
     name = "iox-cpp-publisher",
     srcs = [
@@ -64,3 +69,23 @@ cc_binary(
         "//iceoryx_posh",
     ],
 )
+
+cc_binary(
+    name = "iox-c-callbacks-subscriber",
+    srcs = [
+        "ice_c_callbacks_subscriber.c",
+    ],
+    deps = [
+        ":sleep_for",
+        ":topic_data",
+        "//iceoryx_binding_c",
+    ],
+)
+
+#genrule(
+#    name = "iox-c-callbacks-subscriber_dsym",
+#    srcs = [":iox-c-callbacks-subscriber"],
+#    outs = ["iox-c-callbacks-subscriber.dSYM"],
+#    output_to_bindir = True,
+#    cmd = "dsymutil $(location :iox-c-callbacks-subscriber) -o $@"
+#)

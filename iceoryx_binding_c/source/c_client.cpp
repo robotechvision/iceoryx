@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
 #include "iceoryx_binding_c/internal/c2cpp_enum_translation.hpp"
 #include "iceoryx_binding_c/internal/cpp2c_enum_translation.hpp"
@@ -35,7 +36,7 @@ extern "C" {
 constexpr uint64_t CLIENT_OPTIONS_INIT_CHECK_CONSTANT = 47113130815;
 
 void iox_client_options_init(iox_client_options_t* options)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(options != nullptr);
 
     ClientOptions clientOptions;
@@ -46,21 +47,21 @@ void iox_client_options_init(iox_client_options_t* options)
     options->serverTooSlowPolicy = cpp2c::consumerTooSlowPolicy(clientOptions.serverTooSlowPolicy);
 
     options->initCheck = CLIENT_OPTIONS_INIT_CHECK_CONSTANT;
-}
+UNCHECK_EXCL }
 
 bool iox_client_options_is_initialized(const iox_client_options_t* const options)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(options != nullptr);
 
     return options->initCheck == CLIENT_OPTIONS_INIT_CHECK_CONSTANT;
-}
+UNCHECK_EXCL }
 
 iox_client_t iox_client_init(iox_client_storage_t* self,
                              const char* const service,
                              const char* const instance,
                              const char* const event,
                              const iox_client_options_t* const options)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(service != nullptr);
     iox::cxx::Expects(instance != nullptr);
@@ -84,25 +85,25 @@ iox_client_t iox_client_init(iox_client_storage_t* self,
 
     self->do_not_touch_me[0] = reinterpret_cast<uint64_t>(me);
     return me;
-}
+UNCHECK_EXCL }
 
 void iox_client_deinit(iox_client_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     delete self;
-}
+UNCHECK_EXCL }
 
 iox_AllocationResult iox_client_loan_request(iox_client_t const self, void** const payload, const uint32_t payloadSize)
-{
+{ CHECK_EXCL
     return iox_client_loan_aligned_request(self, payload, payloadSize, IOX_C_CHUNK_DEFAULT_USER_PAYLOAD_ALIGNMENT);
-}
+UNCHECK_EXCL }
 
 iox_AllocationResult iox_client_loan_aligned_request(iox_client_t const self,
                                                      void** const payload,
                                                      const uint32_t payloadSize,
                                                      const uint32_t payloadAlignment)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(payload != nullptr);
 
@@ -114,18 +115,18 @@ iox_AllocationResult iox_client_loan_aligned_request(iox_client_t const self,
 
     *payload = result.value();
     return AllocationResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 void iox_client_release_request(iox_client_t const self, void* const payload)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(payload != nullptr);
 
     self->releaseRequest(payload);
-}
+UNCHECK_EXCL }
 
 iox_ClientSendResult iox_client_send(iox_client_t const self, void* const payload)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     auto result = self->send(payload);
@@ -135,28 +136,28 @@ iox_ClientSendResult iox_client_send(iox_client_t const self, void* const payloa
     }
 
     return ClientSendResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 void iox_client_connect(iox_client_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     self->connect();
-}
+UNCHECK_EXCL }
 
 void iox_client_disconnect(iox_client_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     self->disconnect();
-}
+UNCHECK_EXCL }
 
 iox_ConnectionState iox_client_get_connection_state(iox_client_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     return cpp2c::connectionState(self->getConnectionState());
-}
+UNCHECK_EXCL }
 
 iox_ChunkReceiveResult iox_client_take_response(iox_client_t const self, const void** const payload)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(payload != nullptr);
 
@@ -168,35 +169,35 @@ iox_ChunkReceiveResult iox_client_take_response(iox_client_t const self, const v
 
     *payload = result.value();
     return ChunkReceiveResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 void iox_client_release_response(iox_client_t const self, const void* const payload)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(payload != nullptr);
 
     self->releaseResponse(payload);
-}
+UNCHECK_EXCL }
 
 void iox_client_release_queued_responses(iox_client_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     self->releaseQueuedResponses();
-}
+UNCHECK_EXCL }
 
 bool iox_client_has_responses(iox_client_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     return self->hasResponses();
-}
+UNCHECK_EXCL }
 
 bool iox_client_has_missed_responses(iox_client_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     return self->hasMissedResponses();
-}
+UNCHECK_EXCL }
 
 iox_service_description_t iox_client_get_service_description(iox_client_t const self)
-{
+{ CHECK_EXCL
     return TranslateServiceDescription(self->getServiceDescription());
-}
+UNCHECK_EXCL }

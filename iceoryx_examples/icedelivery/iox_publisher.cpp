@@ -27,10 +27,10 @@
 
 constexpr char APP_NAME[] = "iox-cpp-publisher";
 
-void getRadarObject(RadarObject* const object, const double& val) noexcept
-{
-    *object = RadarObject(val, val, val);
-}
+// void getRadarObject(RadarObject* const object, const double& val) noexcept
+// {
+//     *object = RadarObject(val, val, val);
+// }
 
 int main()
 {
@@ -56,6 +56,11 @@ int main()
                 ice_hdr.data_kind = SDK_DATA;
                 ice_hdr.data_size = sizeof(double);
                 ice_hdr.shm_data_state = IOX_CHUNK_CONTAINS_RAW_DATA;
+                for (int i = 0; i < 12; i++)
+                    ice_hdr.guid.prefix.s[i] = 0;
+                for (int i = 0; i < 3; i++)
+                    ice_hdr.guid.prefix.u[i] = 0;
+                ice_hdr.guid.entityid.u = 0;
                 // ice_hdr.guid = 0;
                 ice_hdr.statusinfo = 0;
                 ice_hdr.tstamp = dds_time();

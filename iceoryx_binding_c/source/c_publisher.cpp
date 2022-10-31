@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
 #include "iceoryx_binding_c/error_handling/error_handling.hpp"
 #include "iceoryx_binding_c/internal/c2cpp_enum_translation.hpp"
@@ -38,7 +39,7 @@ extern "C" {
 constexpr uint64_t PUBLISHER_OPTIONS_INIT_CHECK_CONSTANT = 123454321;
 
 void iox_pub_options_init(iox_pub_options_t* options)
-{
+{ CHECK_EXCL
     if (options == nullptr)
     {
         LogWarn() << "publisher options initialization skipped - null pointer provided";
@@ -52,7 +53,7 @@ void iox_pub_options_init(iox_pub_options_t* options)
     options->subscriberTooSlowPolicy = cpp2c::consumerTooSlowPolicy(publisherOptions.subscriberTooSlowPolicy);
 
     options->initCheck = PUBLISHER_OPTIONS_INIT_CHECK_CONSTANT;
-}
+UNCHECK_EXCL }
 
 bool iox_pub_options_is_initialized(const iox_pub_options_t* const options)
 {
@@ -64,7 +65,7 @@ iox_pub_t iox_pub_init(iox_pub_storage_t* self,
                        const char* const instance,
                        const char* const event,
                        const iox_pub_options_t* const options)
-{
+{ CHECK_EXCL
     if (self == nullptr)
     {
         LogWarn() << "publisher initialization skipped - null pointer provided for iox_pub_storage_t";
@@ -103,38 +104,38 @@ iox_pub_t iox_pub_init(iox_pub_storage_t* self,
         },
         publisherOptions);
     return me;
-}
+UNCHECK_EXCL }
 
 void iox_pub_deinit(iox_pub_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     self->m_portData->m_toBeDestroyed.store(true, std::memory_order_relaxed);
     delete self;
-}
+UNCHECK_EXCL }
 
 iox_AllocationResult iox_pub_loan_chunk(iox_pub_t const self, void** const userPayload, const uint32_t userPayloadSize)
-{
+{ CHECK_EXCL
     return iox_pub_loan_aligned_chunk_with_user_header(self,
                                                        userPayload,
                                                        userPayloadSize,
                                                        IOX_C_CHUNK_DEFAULT_USER_PAYLOAD_ALIGNMENT,
                                                        IOX_C_CHUNK_NO_USER_HEADER_SIZE,
                                                        IOX_C_CHUNK_NO_USER_HEADER_ALIGNMENT);
-}
+UNCHECK_EXCL }
 
 iox_AllocationResult iox_pub_loan_aligned_chunk(iox_pub_t const self,
                                                 void** const userPayload,
                                                 const uint32_t userPayloadSize,
                                                 const uint32_t userPayloadAlignment)
-{
+{ CHECK_EXCL
     return iox_pub_loan_aligned_chunk_with_user_header(self,
                                                        userPayload,
                                                        userPayloadSize,
                                                        userPayloadAlignment,
                                                        IOX_C_CHUNK_NO_USER_HEADER_SIZE,
                                                        IOX_C_CHUNK_NO_USER_HEADER_ALIGNMENT);
-}
+UNCHECK_EXCL }
 
 iox_AllocationResult iox_pub_loan_aligned_chunk_with_user_header(iox_pub_t const self,
                                                                  void** const userPayload,
@@ -142,7 +143,7 @@ iox_AllocationResult iox_pub_loan_aligned_chunk_with_user_header(iox_pub_t const
                                                                  const uint32_t userPayloadAlignment,
                                                                  const uint32_t userHeaderSize,
                                                                  const uint32_t userHeaderAlignment)
-{
+{ CHECK_EXCL
     auto result = PublisherPortUser(self->m_portData)
                       .tryAllocateChunk(userPayloadSize, userPayloadAlignment, userHeaderSize, userHeaderAlignment)
                       .and_then([&userPayload](ChunkHeader* h) { *userPayload = h->userPayload(); });
@@ -152,39 +153,39 @@ iox_AllocationResult iox_pub_loan_aligned_chunk_with_user_header(iox_pub_t const
     }
 
     return AllocationResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 void iox_pub_release_chunk(iox_pub_t const self, void* const userPayload)
-{
+{ CHECK_EXCL
     PublisherPortUser(self->m_portData).releaseChunk(ChunkHeader::fromUserPayload(userPayload));
-}
+UNCHECK_EXCL }
 
 void iox_pub_publish_chunk(iox_pub_t const self, void* const userPayload)
-{
+{ CHECK_EXCL
     PublisherPortUser(self->m_portData).sendChunk(ChunkHeader::fromUserPayload(userPayload));
-}
+UNCHECK_EXCL }
 
 void iox_pub_offer(iox_pub_t const self)
-{
+{ CHECK_EXCL
     PublisherPortUser(self->m_portData).offer();
-}
+UNCHECK_EXCL }
 
 void iox_pub_stop_offer(iox_pub_t const self)
-{
+{ CHECK_EXCL
     PublisherPortUser(self->m_portData).stopOffer();
-}
+UNCHECK_EXCL }
 
 bool iox_pub_is_offered(iox_pub_t const self)
-{
+{ CHECK_EXCL
     return PublisherPortUser(self->m_portData).isOffered();
-}
+UNCHECK_EXCL }
 
 bool iox_pub_has_subscribers(iox_pub_t const self)
-{
+{ CHECK_EXCL
     return PublisherPortUser(self->m_portData).hasSubscribers();
-}
+UNCHECK_EXCL }
 
 iox_service_description_t iox_pub_get_service_description(iox_pub_t const self)
-{
+{ CHECK_EXCL
     return TranslateServiceDescription(PublisherPortUser(self->m_portData).getCaProServiceDescription());
-}
+UNCHECK_EXCL }

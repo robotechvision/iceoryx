@@ -73,6 +73,7 @@ iox_add_library(
         source/cpp2c_service_description_translation.cpp
         source/c_service_discovery.cpp
         source/error_handling.cpp
+        source/exclusivity_check.cpp
 )
 
 #

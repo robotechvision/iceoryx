@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+#include "iceoryx_binding_c/internal/exclusivity_check.hpp"
 
 #include "iceoryx_binding_c/internal/c2cpp_enum_translation.hpp"
 #include "iceoryx_binding_c/internal/cpp2c_enum_translation.hpp"
@@ -34,7 +35,7 @@ extern "C" {
 constexpr uint64_t SERVER_OPTIONS_INIT_CHECK_CONSTANT = 333333331737373;
 
 void iox_server_options_init(iox_server_options_t* const options)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(options != nullptr);
 
     ServerOptions serverOptions;
@@ -44,21 +45,21 @@ void iox_server_options_init(iox_server_options_t* const options)
     options->requestQueueFullPolicy = cpp2c::queueFullPolicy(serverOptions.requestQueueFullPolicy);
     options->clientTooSlowPolicy = cpp2c::consumerTooSlowPolicy(serverOptions.clientTooSlowPolicy);
     options->initCheck = SERVER_OPTIONS_INIT_CHECK_CONSTANT;
-}
+UNCHECK_EXCL }
 
 bool iox_server_options_is_initialized(const iox_server_options_t* const options)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(options != nullptr);
 
     return options->initCheck == SERVER_OPTIONS_INIT_CHECK_CONSTANT;
-}
+UNCHECK_EXCL }
 
 iox_server_t iox_server_init(iox_server_storage_t* self,
                              const char* const service,
                              const char* const instance,
                              const char* const event,
                              const iox_server_options_t* const options)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(service != nullptr);
     iox::cxx::Expects(instance != nullptr);
@@ -82,17 +83,17 @@ iox_server_t iox_server_init(iox_server_storage_t* self,
 
     self->do_not_touch_me[0] = reinterpret_cast<uint64_t>(me);
     return me;
-}
+UNCHECK_EXCL }
 
 void iox_server_deinit(iox_server_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     delete self;
-}
+UNCHECK_EXCL }
 
 iox_ServerRequestResult iox_server_take_request(iox_server_t const self, const void** const payload)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(payload != nullptr);
 
@@ -103,31 +104,31 @@ iox_ServerRequestResult iox_server_take_request(iox_server_t const self, const v
     }
     *payload = result.value();
     return ServerRequestResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 void iox_server_release_request(iox_server_t const self, const void* const payload)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(payload != nullptr);
 
     self->releaseRequest(payload);
-}
+UNCHECK_EXCL }
 
 iox_AllocationResult iox_server_loan_response(iox_server_t const self,
                                               const void* const requestPayload,
                                               void** const payload,
                                               const uint32_t payloadSize)
-{
+{ CHECK_EXCL
     return iox_server_loan_aligned_response(
         self, requestPayload, payload, payloadSize, IOX_C_CHUNK_DEFAULT_USER_PAYLOAD_ALIGNMENT);
-}
+UNCHECK_EXCL }
 
 iox_AllocationResult iox_server_loan_aligned_response(iox_server_t const self,
                                                       const void* const requestPayload,
                                                       void** const payload,
                                                       const uint32_t payloadSize,
                                                       const uint32_t payloadAlignment)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(requestPayload != nullptr);
     iox::cxx::Expects(payload != nullptr);
@@ -140,10 +141,10 @@ iox_AllocationResult iox_server_loan_aligned_response(iox_server_t const self,
 
     *payload = result.value();
     return AllocationResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 iox_ServerSendResult iox_server_send(iox_server_t const self, void* const payload)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     auto result = self->send(payload);
@@ -153,68 +154,68 @@ iox_ServerSendResult iox_server_send(iox_server_t const self, void* const payloa
     }
 
     return ServerSendResult_SUCCESS;
-}
+UNCHECK_EXCL }
 
 void iox_server_release_response(iox_server_t const self, void* const payload)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
     iox::cxx::Expects(payload != nullptr);
 
     self->releaseResponse(payload);
-}
+UNCHECK_EXCL }
 
 iox_service_description_t iox_server_get_service_description(iox_server_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return TranslateServiceDescription(self->getServiceDescription());
-}
+UNCHECK_EXCL }
 
 void iox_server_offer(iox_server_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     self->offer();
-}
+UNCHECK_EXCL }
 
 void iox_server_stop_offer(iox_server_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     self->stopOffer();
-}
+UNCHECK_EXCL }
 
 bool iox_server_is_offered(iox_server_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return self->isOffered();
-}
+UNCHECK_EXCL }
 
 bool iox_server_has_clients(iox_server_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return self->hasClients();
-}
+UNCHECK_EXCL }
 
 bool iox_server_has_requests(iox_server_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return self->hasRequests();
-}
+UNCHECK_EXCL }
 
 bool iox_server_has_missed_requests(iox_server_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     return self->hasMissedRequests();
-}
+UNCHECK_EXCL }
 
 void iox_server_release_queued_requests(iox_server_t const self)
-{
+{ CHECK_EXCL
     iox::cxx::Expects(self != nullptr);
 
     self->releaseQueuedRequests();
-}
+UNCHECK_EXCL }
