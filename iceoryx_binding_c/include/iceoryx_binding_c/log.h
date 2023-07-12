@@ -21,12 +21,13 @@
 enum iox_LogLevel
 {
     Iceoryx_LogLevel_Off = 0,
-    Iceoryx_LogLevel_Trace,
-    Iceoryx_LogLevel_Debug,
-    Iceoryx_LogLevel_Info,
-    Iceoryx_LogLevel_Warn,
-    Iceoryx_LogLevel_Error,
-    Iceoryx_LogLevel_Fatal
+    Iceoryx_LogLevel_Trace = 1,
+    Iceoryx_LogLevel_Debug = 2,
+    Iceoryx_LogLevel_Info = 3,
+    Iceoryx_LogLevel_Warn = 4,
+    Iceoryx_LogLevel_Error = 5,
+    Iceoryx_LogLevel_Fatal = 6,
+    Iceoryx_LogLevel_Verbose = 1,
 };
 
 /// @brief set the log level of the iceoryx runtime
